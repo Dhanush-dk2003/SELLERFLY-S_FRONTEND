@@ -20,6 +20,18 @@ const InvoiceGenerator = () => {
   });
 
   const isLargeScreen = useMediaQuery({ minWidth: 992 });
+  const [signatureImg, setSignatureImg] = useState(null);
+
+useEffect(() => {
+  const img = new Image();
+  img.src = '/sign.png';
+  img.onload = () => {
+    setSignatureImg(img);
+  };
+  img.onerror = () => {
+    console.log("Signature image failed to load");
+  };
+}, []);
 
   useEffect(() => {
     const today = new Date();
@@ -73,220 +85,234 @@ const InvoiceGenerator = () => {
   const generatePDF = () => {
     const doc = new jsPDF();
 
-     // Add logo image
-  const logoUrl = '/Sellerfly-min.png'; // Path from public folder
-  
-  // Create image element
-  const img = new Image();
-  img.src = logoUrl;
-  
-  // Wait for image to load
-  img.onload = function() {
-    // Add logo to PDF (position: x=14, y=10, width=40, height=auto)
-    const logoWidth = 40;
-    const logoHeight = (img.height * logoWidth) / img.width;
-    doc.addImage(img, 'PNG', 14, 10, logoWidth, logoHeight);
+    // Add logo image
+    const logoUrl = '/Sellerfly-min.png'; // Path from public folder
+    const img = new Image();
+    img.src = logoUrl;
 
-    // Invoice block on right
-    doc.setFontSize(16);
-    doc.setFont(undefined, "bold");
-    doc.text("INVOICE", 190, 20, { align: "right" });
-    doc.setFont(undefined, "normal");
-    doc.setFontSize(10);
-    
-    // Labels left
-    doc.text("Number:", 145, 28);
-    doc.text("Date:", 145, 34);
-    doc.text("Due Date:", 145, 40);
+    // Function to continue PDF generation
+    const continuePDFGeneration = () => {
+      // Invoice block on right
+      doc.setFontSize(16);
+      doc.setFont(undefined, "bold");
+      doc.text("INVOICE", 190, 20, { align: "right" });
+      doc.setFont(undefined, "normal");
+      doc.setFontSize(10);
+      
+      // Labels left
+      doc.text("Number:", 145, 28);
+      doc.text("Date:", 145, 34);
+      doc.text("Due Date:", 145, 40);
 
-    // Values right
-    doc.text(`${invoiceData.invoiceNumber}`, 190, 28, { align: "right" });
-    doc.text(`${invoiceData.invoiceDate}`, 190, 34, { align: "right" });
-    doc.text(`${invoiceData.invoiceDueDate}`, 190, 40, { align: "right" });
+      // Values right
+      doc.text(`${invoiceData.invoiceNumber}`, 190, 28, { align: "right" });
+      doc.text(`${invoiceData.invoiceDate}`, 190, 34, { align: "right" });
+      doc.text(`${invoiceData.invoiceDueDate}`, 190, 40, { align: "right" });
 
-    // Status box
-    doc.setFillColor(invoiceData.status === "PAID" ? 0 : 255, invoiceData.status === "PAID" ? 150 : 0, 0);
-    doc.setTextColor(255, 255, 255);
-    doc.rect(160, 45, 30, 6, 'F');
-    doc.text(invoiceData.status.toUpperCase(), 175, 49, { align: "center" });
-    doc.setTextColor(0);
-    doc.setFontSize(9);
+      // Status box
+      doc.setFillColor(invoiceData.status === "PAID" ? 0 : 255, invoiceData.status === "PAID" ? 150 : 0, 0);
+      doc.setTextColor(255, 255, 255);
+      doc.rect(160, 45, 30, 6, 'F');
+      doc.text(invoiceData.status.toUpperCase(), 175, 49, { align: "center" });
+      doc.setTextColor(0);
+      doc.setFontSize(9);
 
-    // Company details
-    let yPos = 30;
-    doc.setFontSize(11);
-    doc.setFont(undefined, "bold");
-    doc.text("SKSY SELLERFLY ONLINE SOLUTIONS LLP", 14, yPos + 5);
+      // Company details
+      let yPos = 30;
+      doc.setFontSize(11);
+      doc.setFont(undefined, "bold");
+      doc.text("SKSY SELLERFLY ONLINE SOLUTIONS LLP", 14, yPos + 5);
 
-    doc.setFont(undefined, "normal");
-    doc.setFontSize(9);
-    doc.text([
-      "Sf.No.434, Shedukarar Street, Ellapalayam,",
-      "Coimbatore, Mettupalayam,",
-      "Mettupalayam - 641697, TAMILNADU, INDIA",
-      "Email: senthil.sellerfly@gmail.com",
-      "Mobile: 6381780309",
-      "GSTIN: 33AFNFS0333L1ZV"
-    ], 14, yPos + 10);
+      doc.setFont(undefined, "normal");
+      doc.setFontSize(9);
+      doc.text([
+        "Sf.No.434, Shedukarar Street, Ellapalayam,",
+        "Coimbatore, Mettupalayam,",
+        "Mettupalayam - 641697, TAMILNADU, INDIA",
+        "Email: senthil.sellerfly@gmail.com",
+        "Mobile: 6381780309",
+        "GSTIN: 33AFNFS0333L1ZV"
+      ], 14, yPos + 10);
 
-    // Divider line
-    doc.line(14, yPos + 35, 196, yPos + 35);
+      // Divider line
+      doc.line(14, yPos + 35, 196, yPos + 35);
 
-    // Addresses
-    yPos += 45;
-    doc.setFontSize(12);
-    doc.setFont(undefined, "bold");
-    doc.text("Customer", 14, yPos);
-    doc.text("Billing Address", 80, yPos);
-    doc.text("Shipping Address", 150, yPos);
-    doc.setFont(undefined, "normal");
-    doc.setFontSize(10);
-    doc.text(invoiceData.customerDetails.split('\n'), 14, yPos + 5);
-    doc.text(invoiceData.billingAddress.split('\n'), 80, yPos + 5);
-    doc.text(invoiceData.shippingAddress.split('\n'), 150, yPos + 5);
+      // Addresses
+      yPos += 45;
+      doc.setFontSize(12);
+      doc.setFont(undefined, "bold");
+      doc.text("Customer", 14, yPos);
+      doc.text("Billing Address", 80, yPos);
+      doc.text("Shipping Address", 150, yPos);
+      doc.setFont(undefined, "normal");
+      doc.setFontSize(10);
+      doc.text(invoiceData.customerDetails.split('\n'), 14, yPos + 5);
+      doc.text(invoiceData.billingAddress.split('\n'), 80, yPos + 5);
+      doc.text(invoiceData.shippingAddress.split('\n'), 150, yPos + 5);
 
-    // Prepare table
-    const rows = [];
-    const hasGST = invoiceData.items.some(item => item.gst);
-    let totalTaxable = 0;
-    let gstTotal = 0;
-    let grandTotal = 0;
+      // Prepare table
+      const rows = [];
+      const hasGST = invoiceData.items.some(item => item.gst);
+      let totalTaxable = 0;
+      let gstTotal = 0;
+      let grandTotal = 0;
 
-    invoiceData.items.forEach((item, index) => {
-      const rate = parseFloat(item.rate) || 0;
-      const qty = parseFloat(item.quantity) || 0;
-      const taxable = rate * qty;
-      let gst = 0;
-      let total = taxable;
+      invoiceData.items.forEach((item, index) => {
+        const rate = parseFloat(item.rate) || 0;
+        const qty = parseFloat(item.quantity) || 0;
+        const taxable = rate * qty;
+        let gst = 0;
+        let total = taxable;
 
-      if (item.gst) {
-        gst = taxable * 0.18;
-        total += gst;
-      }
+        if (item.gst) {
+          gst = taxable * 0.18;
+          total += gst;
+        }
 
-      totalTaxable += taxable;
-      gstTotal += gst;
-      grandTotal += total;
+        totalTaxable += taxable;
+        gstTotal += gst;
+        grandTotal += total;
 
+        if (hasGST) {
+          rows.push([
+            index + 1,
+            item.gst ? `${item.description}\nGST: 18%` : item.description,
+            rate.toFixed(2),
+            qty,
+            taxable.toFixed(2),
+            total.toFixed(2),
+          ]);
+        } else {
+          rows.push([
+            index + 1,
+            item.description,
+            rate.toFixed(2),
+            qty,
+            total.toFixed(2),
+          ]);
+        }
+      });
+
+      const headers = hasGST
+        ? [["S.No", "Description", "Rate", "Quantity", "Taxable", "Total"]]
+        : [["S.No", "Description", "Rate", "Quantity", "Total"]];
+
+      yPos += 30;
+
+      autoTable(doc,{
+        startY: yPos + 5,
+        head: headers,
+        body: rows,
+        theme: 'grid',
+        styles: { fontSize: 9, cellPadding: 3, lineColor: [230, 230, 230], lineWidth: 0.3 },
+        headStyles: { fillColor: [189, 191, 193], textColor: 255, fontSize: 11, fontStyle: 'bold' },
+        columnStyles: hasGST
+          ? {
+              0: { cellWidth: 15 },
+              1: { cellWidth: 60 },
+              2: { cellWidth: 29 },
+              3: { cellWidth: 22 },
+              4: { cellWidth: 29 },
+              5: { cellWidth: 29 }
+            }
+          : {
+              0: { cellWidth: 15 },
+              1: { cellWidth: 80 },
+              2: { cellWidth: 30 },
+              3: { cellWidth: 25 },
+              4: { cellWidth: 30 }
+            }
+      });
+
+      let finalY = doc.lastAutoTable.finalY + 15;
+
+      // Bank details
+      doc.setFontSize(10);
+      doc.setFont(undefined, "bold");
+      doc.text("Bank Name:", 14, finalY);
+      doc.text("Account Name:", 14, finalY + 4);
+      doc.text("Account Number:", 14, finalY + 8);
+      doc.text("IFSC Code:", 14, finalY + 12);
+
+      doc.setFont(undefined, "normal");
+      doc.text("SOUTH INDIAN BANK", 47, finalY);
+      doc.text("SKSY SELLERFLY ONLINE SOLUTIONS LLP", 47, finalY + 4);
+      doc.text("0753073000000635", 47, finalY + 8);
+      doc.text("SIBL0000753", 47, finalY + 12);
+
+      // Totals
       if (hasGST) {
-        rows.push([
-          index + 1,
-          item.gst ? `${item.description}\nGST: 18%` : item.description,
-          rate.toFixed(2),
-          qty,
-          taxable.toFixed(2),
-          total.toFixed(2),
-        ]);
+        doc.setFontSize(10);
+        doc.setFont(undefined, "bold");
+        doc.text(`Taxable`, 150, finalY);
+        doc.text(`IGST`, 150, finalY + 5);
+        doc.text(`Total`, 150, finalY + 10);
+        doc.setFont(undefined, "normal");
+        doc.text(`INR ${totalTaxable.toFixed(2)}`, 165, finalY);
+        doc.text(`INR ${gstTotal.toFixed(2)}`, 165, finalY + 5);
+        doc.text(`INR ${grandTotal.toFixed(2)}`, 165, finalY + 10);
+        finalY += 25;
       } else {
-        rows.push([
-          index + 1,
-          item.description,
-          rate.toFixed(2),
-          qty,
-          total.toFixed(2),
-        ]);
+        doc.setFontSize(10);
+        doc.setFont(undefined, "bold");
+        doc.text(`Total`, 150, finalY);
+        doc.setFont(undefined, "normal");
+        doc.text(`INR ${grandTotal.toFixed(2)}`, 165, finalY);
+        finalY += 20;
       }
-    });
 
-    const headers = hasGST
-      ? [["S.No", "Description", "Rate", "Quantity", "Taxable", "Total"]]
-      : [["S.No", "Description", "Rate", "Quantity", "Total"]];
+      // Total in words
+      doc.setFontSize(11);
+      doc.setFont(undefined, "italic");
+      doc.text(`Total in Words: Indian Rupee ${convertNumberToWords(Math.round(grandTotal))} Only`, 196, finalY, { align: "right" });
 
-    yPos += 30;
+      finalY += 40;
 
-    autoTable(doc,{
-      startY: yPos + 5,
-      head: headers,
-      body: rows,
-      theme: 'grid',
-      styles: { fontSize: 9, cellPadding: 3, lineColor: [230, 230, 230], lineWidth: 0.3 },
-      headStyles: { fillColor: [189, 191, 193], textColor: 255, fontSize: 11, fontStyle: 'bold' },
-      columnStyles: hasGST
-        ? {
-            0: { cellWidth: 15 },
-            1: { cellWidth: 60 },
-            2: { cellWidth: 29 },
-            3: { cellWidth: 22 },
-            4: { cellWidth: 29 },
-            5: { cellWidth: 29 }
-          }
-        : {
-            0: { cellWidth: 15 },
-            1: { cellWidth: 80 },
-            2: { cellWidth: 30 },
-            3: { cellWidth: 25 },
-            4: { cellWidth: 30 }
-          }
-    });
-
-    let finalY = doc.lastAutoTable.finalY + 15;
-
-    // Bank details
-    doc.setFontSize(10);
-    doc.setFont(undefined, "bold");
-    doc.text("Bank Name:", 14, finalY);
-    doc.text("Account Name:", 14, finalY + 4);
-    doc.text("Account Number:", 14, finalY + 8);
-    doc.text("IFSC Code:", 14, finalY + 12);
-
-    doc.setFont(undefined, "normal");
-    doc.text("SOUTH INDIAN BANK", 47, finalY);
-    doc.text("SKSY SELLERFLY ONLINE SOLUTIONS LLP", 47, finalY + 4);
-    doc.text("0753073000000635", 47, finalY + 8);
-    doc.text("SIBL0000753", 47, finalY + 12);
-
-    // Totals
-    if (hasGST) {
-      doc.setFontSize(10);
-      doc.setFont(undefined, "bold");
-      doc.text(`Taxable`, 150, finalY);
-      doc.text(`IGST`, 150, finalY + 5);
-      doc.text(`Total`, 150, finalY + 10);
+      // Signature
       doc.setFont(undefined, "normal");
-      doc.text(`INR ${totalTaxable.toFixed(2)}`, 165, finalY);
-      doc.text(`INR ${gstTotal.toFixed(2)}`, 165, finalY + 5);
-      doc.text(`INR ${grandTotal.toFixed(2)}`, 165, finalY + 10);
-      finalY += 25;
-    } else {
-      doc.setFontSize(10);
-      doc.setFont(undefined, "bold");
-      doc.text(`Total`, 150, finalY);
-      doc.setFont(undefined, "normal");
-      doc.text(`INR ${grandTotal.toFixed(2)}`, 165, finalY);
-      finalY += 20;
-    }
+      doc.text("For SKSY SELLERFLY ONLINE SOLUTIONS LLP", 196, finalY, { align: "right" });
+      finalY += 5; // Add space after company name
 
-    // Total in words
-    doc.setFontSize(11);
-    doc.setFont(undefined, "italic");
-    doc.text(`Total in Words: Indian Rupee ${convertNumberToWords(Math.round(grandTotal))} Only`, 196, finalY, { align: "right" });
+      // Add signature image if it exists
+      if (signatureImg) {
+        const signWidth = 40; // Adjust width as needed
+        const signHeight = (signatureImg.height * signWidth) / signatureImg.width;
+        doc.addImage(signatureImg, 'PNG', 150, finalY, signWidth, signHeight);
+        finalY += signHeight ; // Adjust spacing after image
+      } else {
+        console.log("Signature image not available");
+        finalY += 10; // Add fallback spacing if image is not loaded
+      }
 
-    finalY += 40;
+      // Signature line
+      doc.line(150, finalY, 196, finalY);
+      finalY += 5;
 
-    // Signature
-    doc.setFont(undefined, "normal");
-    doc.text("For SKSY SELLERFLY ONLINE SOLUTIONS LLP", 196, finalY, { align: "right" });
-    finalY += 40;
-    doc.text("Authorised Signatory", 196, finalY, { align: "right" });
+      // Authorised Signatory text
+      doc.text("Authorised Signatory", 196, finalY, { align: "right" });
 
-    // Signature space
-    doc.line(150, finalY - 8, 196, finalY - 8);
+      // Footer
+      doc.line(14, 285, 196, 285);
+      doc.text("Thank you for your business.", 105, 290, { align: "center" });
 
-    // Footer
-    doc.line(14, 285, 196, 285);
-    doc.text("Thank you for your business.", 105, 290, { align: "center" });
+      doc.save(`Sellerfly_invoice_${invoiceData.invoiceNumber}.pdf`);
+    };
 
-    doc.save(`Sellerfly_invoice_${invoiceData.invoiceNumber}.pdf`);
+    // Handle logo loading
+    img.onload = function() {
+      const logoWidth = 40;
+      const logoHeight = (img.height * logoWidth) / img.width;
+      doc.addImage(img, 'PNG', 14, 10, logoWidth, logoHeight);
+      continuePDFGeneration();
+    };
+
+    img.onerror = function() {
+      console.log("Logo failed to load, using text fallback");
+      doc.setFontSize(16);
+      doc.text("SELLERFLY", 14, 20);
+      continuePDFGeneration();
+    };
   };
-  // Fallback if image fails to load
-  img.onerror = function() {
-    console.log("Logo failed to load, using text fallback");
-    doc.setFontSize(16);
-    doc.text("SELLERFLY", 14, 20);
-    // Continue with rest of PDF generation...
-    doc.save(`Sellerfly_invoice_${invoiceData.invoiceNumber}.pdf`);
-  };
-};
 
   const convertNumberToWords = (amount) => {
   const words = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
