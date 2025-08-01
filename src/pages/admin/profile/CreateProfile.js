@@ -163,6 +163,7 @@ const handleCloseSnackbar = () =>
                     <label>Employee ID</label>
                     <input
                       type="text"
+                      name="employeeId"
                       className="form-control"
                       value={formData.employeeId || ""}
                       onChange={handleChange}
