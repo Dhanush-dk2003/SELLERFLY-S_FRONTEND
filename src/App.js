@@ -12,9 +12,11 @@ import Logout from './pages/commonpages/Logout';
 import InvoiceGenerator from './pages/admin/InvoiceGenerator';
 import MessagePage from './pages/commonpages/message/MessagePage';
 import Snackbar from "./components/Snackbar";
-import { MessageStatusContext } from "./contexts/MessageStatusContext"; // ✅ Make sure this is imported
+import { MessageStatusContext } from "./contexts/MessageStatusContext"; 
 import React, { useContext } from "react";
-import Profilepage from './pages/admin/profile/Profilepage'; // ✅ Import the Profilepage component
+import Profilepage from './pages/admin/profile/Profilepage';
+import Clientregistration from './pages/user/ClientRegister/Clientregistration.js';
+import Portalregistration from './pages/user/Portalregistration';
 
 
 function App() {
@@ -100,6 +102,23 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/client-registration"
+            element={
+              <ProtectedRoute allowedRoles={['USER']}>
+                <Clientregistration />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/portal-registration"
+            element={
+              <ProtectedRoute allowedRoles={['USER']}>
+                <Portalregistration />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/message"
             element={

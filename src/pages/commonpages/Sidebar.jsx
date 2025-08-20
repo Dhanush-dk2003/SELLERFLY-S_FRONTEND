@@ -31,6 +31,10 @@ const Sidebar = () => {
       setActiveItem("tasks");
     } else if (location.pathname.includes("message")) {
       setActiveItem("message");
+    } else if (location.pathname.includes("client-registration")) {
+      setActiveItem("client-registration");
+    } else if (location.pathname.includes("portal-registration")) {
+      setActiveItem("portal-registration");
     }
   }, [location.pathname]);
 
@@ -188,21 +192,20 @@ const SidebarContent = ({
             </>
           )}
 
-              {user?.role === "ADMIN" && (
-                <li className="nav-item mb-3">
-                  <button
-                    className={`nav-link w-100 rounded ${
-                      activeItem === "invoice"
-                        ? "bg-dark text-white fw-bold"
-                        : "bg-light text-dark"
-                    }`}
-                    onClick={() => handleItemClick("invoice", "/invoice")}
-                  >
-                    Invoice
-                  </button>
-                </li>
-              )}
-              
+          {user?.role === "ADMIN" && (
+            <li className="nav-item mb-3">
+              <button
+                className={`nav-link w-100 rounded ${
+                  activeItem === "invoice"
+                    ? "bg-dark text-white fw-bold"
+                    : "bg-light text-dark"
+                }`}
+                onClick={() => handleItemClick("invoice", "/invoice")}
+              >
+                Invoice
+              </button>
+            </li>
+          )}
 
           {user?.role === "USER" && (
             <li className="nav-item mb-3">
@@ -218,6 +221,45 @@ const SidebarContent = ({
               </button>
             </li>
           )}
+          {user?.department === "REGISTRATION TEAM" && (
+            <>
+              <li className="nav-item mb-3">
+                <button
+                  className={`nav-link w-100 rounded ${
+                    activeItem === "client-registration"
+                      ? "bg-dark text-white fw-bold"
+                      : "bg-light text-dark"
+                  }`}
+                  onClick={() =>
+                    handleItemClick(
+                      "client-registration",
+                      "/client-registration"
+                    )
+                  }
+                >
+                  Client Registration
+                </button>
+              </li>
+              <li className="nav-item mb-3">
+                <button
+                  className={`nav-link w-100 rounded ${
+                    activeItem === "portal-registration"
+                      ? "bg-dark text-white fw-bold"
+                      : "bg-light text-dark"
+                  }`}
+                  onClick={() =>
+                    handleItemClick(
+                      "portal-registration",
+                      "/portal-registration"
+                    )
+                  }
+                >
+                  Portal Registration
+                </button>
+              </li>
+            </>
+          )}
+
           <li className="nav-item mb-3 position-relative">
             <button
               className={`nav-link w-100 rounded ${

@@ -70,9 +70,31 @@ const handleCloseSnackbar = () =>
   const handleSubmit = async (e) => {
   e.preventDefault();
 
+  // Required fields validation
+  const requiredFields = [
+    "employeeId",
+    "firstName",
+    "lastName",
+    "dob",
+    "gender",
+    "joiningDate",
+    "phoneNumber",
+    "emergencyNumber",
+    "officialEmail",
+  ];
+  const missingFields = requiredFields.filter((field) => !formData[field]);
+
+  if (missingFields.length > 0) {
+    setSnackbar({
+      show: true,
+      message: `Please fill in all required fields: ${missingFields.join(", ")}`,
+      type: "error",
+    });
+    return;
+  }
+
   try {
     const response = await fetch("http://localhost:5000/api/users/create", {
-    // const response = await fetch("https://sellerfly-s-backend.onrender.com/api/users/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
@@ -80,29 +102,26 @@ const handleCloseSnackbar = () =>
 
     const result = await response.json();
     if (response.ok) {
-  setSnackbar({
-    show: true,
-    message: "Profile created successfully!",
-    type: "success",
-  });
-} else {
-  setSnackbar({
-    show: true,
-    message: result.message || "Error occurred",
-    type: "error",
-  });
-}
-
+      setSnackbar({
+        show: true,
+        message: "Profile created successfully!",
+        type: "success",
+      });
+    } else {
+      setSnackbar({
+        show: true,
+        message: result.message || "Error occurred",
+        type: "error",
+      });
+    }
   } catch (err) {
     setSnackbar({
-  show: true,
-  message: "Failed to submit: " + err.message,
-  type: "error",
-});
-
+      show: true,
+      message: "Failed to submit: " + err.message,
+      type: "error",
+    });
   }
 };
-
 
 
   return (
