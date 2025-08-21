@@ -105,7 +105,7 @@ const MessagePage = () => {
         }}
       >
         <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-          <h1 className="mb-4  mt-4">{user?.name}'s Message Box</h1>
+          <h1 className="mb-4  mt-4">Message Box</h1>
           <button
             className="btn btn-outline-dark mt-2 mt-md-0 d-flex align-items-center"
             onClick={() => setShowCompose(true)}

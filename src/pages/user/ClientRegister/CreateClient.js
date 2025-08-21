@@ -3,26 +3,24 @@ import Snackbar from "../../../components/Snackbar";
 
 const CreateClient = () => {
   const [formData, setFormData] = useState({
-  companyName: "",
-  fullName: "",
-  mobileNumber: "",
-  address: "",
-  email: "",
-  pickupAddress: "",
-  panNumber: "",
-  pancardLink: "",       // new field added here
-  bankName: "",
-  branchName: "",
-  accountHolderName: "",
-  accountNumber: "",
-  ifscCode: "",
-  gstCertificateLink: "",
-  trademarkCertificateLink: "",
-  cancelChequeLink: "",
-  signatureLink: "",
-  budget: "",
-});
-
+    companyName: "",
+    fullName: "",
+    mobileNumber: "",
+    address: "",
+    email: "",
+    pickupAddress: "",
+    gstCertificateNumber: "",   // ✅ replaced panNumber
+    bankName: "",
+    branchName: "",
+    accountHolderName: "",
+    accountNumber: "",
+    ifscCode: "",
+    documentsLink: "",          // ✅ only one document link
+    description: "",            // ✅ new description box
+    aPlusContent: false,        // ✅ checkbox
+    brandWebstore: false,       // ✅ checkbox
+    budget: "",
+  });
 
   const [snackbar, setSnackbar] = useState({
     show: false,
@@ -34,8 +32,11 @@ const CreateClient = () => {
     setSnackbar((prev) => ({ ...prev, show: false }));
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -79,6 +80,7 @@ const CreateClient = () => {
       <div className="card shadow border p-4">
         <form onSubmit={handleSubmit}>
           <div className="row">
+
             {/* Client Information */}
             <div className="border rounded p-3 mb-4">
               <h5 className="mb-3">Client Information</h5>
@@ -89,27 +91,27 @@ const CreateClient = () => {
                     type="text"
                     name="fullName"
                     className="form-control"
+                    value={formData.fullName}
                     onChange={handleChange}
                   />
                 </div>
                 <div className="col-md-4 mb-3">
-  <label htmlFor="companyName">Company Name</label>
-  <input
-    type="text"
-    id="companyName"
-    name="companyName"
-    className="form-control"
-    placeholder="Enter company name"
-    value={formData.companyName}
-    onChange={handleChange}
-  />
-</div>
+                  <label>Company Name</label>
+                  <input
+                    type="text"
+                    name="companyName"
+                    className="form-control"
+                    value={formData.companyName}
+                    onChange={handleChange}
+                  />
+                </div>
                 <div className="col-md-4 mb-3">
                   <label>Mobile Number</label>
                   <input
                     type="text"
                     name="mobileNumber"
                     className="form-control"
+                    value={formData.mobileNumber}
                     onChange={handleChange}
                   />
                 </div>
@@ -119,26 +121,86 @@ const CreateClient = () => {
                     type="email"
                     name="email"
                     className="form-control"
+                    value={formData.email}
                     onChange={handleChange}
                   />
                 </div>
                 <div className="col-md-4 mb-3">
-  <label>Package (INR)</label>
-  <input
-    type="number"
-    name="budget"
-    className="form-control"
-    value={formData.budget}
-    onChange={handleChange}
-  />
-</div>
-
+                  <label>Package (INR)</label>
+                  <input
+                    type="number"
+                    name="budget"
+                    className="form-control"
+                    value={formData.budget}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="col-md-4 mb-3">
+                  <label>GST Certificate Number</label>
+                  <input
+                    type="text"
+                    name="gstCertificateNumber"
+                    className="form-control"
+                    value={formData.gstCertificateNumber}
+                    onChange={handleChange}
+                  />
+                </div>
+                <div className="col-md-6 mb-3">
+                <label>Documents Link</label>
+                <input
+                  type="url"
+                  name="documentsLink"
+                  className="form-control"
+                  placeholder="Enter shared document link"
+                  value={formData.documentsLink}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="col-md-6 mb-3 d-flex align-items-center">
+                <div className="form-check me-3">
+                  <input
+                    type="checkbox"
+                    name="aPlusContent"
+                    checked={formData.aPlusContent}
+                    onChange={handleChange}
+                    className="form-check-input"
+                    id="aPlusContent"
+                  />
+                  <label className="form-check-label" htmlFor="aPlusContent">
+                    A+ Content
+                  </label>
+                </div>
+                <div className="form-check">
+                  <input
+                    type="checkbox"
+                    name="brandWebstore"
+                    checked={formData.brandWebstore}
+                    onChange={handleChange}
+                    className="form-check-input"
+                    id="brandWebstore"
+                  />
+                  <label className="form-check-label" htmlFor="brandWebstore">
+                    Brand Webstore
+                  </label>
+                </div>
+              </div>
+                <div className="col-md-12 mb-3">
+                <label>Description</label>
+                <textarea
+                  name="description"
+                  className="form-control"
+                  rows="3"
+                  value={formData.description}
+                  onChange={handleChange}
+                ></textarea>
+              </div>
                 <div className="col-md-12 mb-3">
                   <label>Address</label>
                   <textarea
                     name="address"
                     className="form-control"
                     rows="3"
+                    value={formData.address}
                     onChange={handleChange}
                   ></textarea>
                 </div>
@@ -148,18 +210,11 @@ const CreateClient = () => {
                     name="pickupAddress"
                     className="form-control"
                     rows="3"
+                    value={formData.pickupAddress}
                     onChange={handleChange}
                   ></textarea>
                 </div>
-                <div className="col-md-4 mb-3">
-                  <label>PAN Card Number</label>
-                  <input
-                    type="text"
-                    name="panNumber"
-                    className="form-control"
-                    onChange={handleChange}
-                  />
-                </div>
+                
               </div>
             </div>
 
@@ -173,6 +228,7 @@ const CreateClient = () => {
                     type="text"
                     name="bankName"
                     className="form-control"
+                    value={formData.bankName}
                     onChange={handleChange}
                   />
                 </div>
@@ -182,6 +238,7 @@ const CreateClient = () => {
                     type="text"
                     name="branchName"
                     className="form-control"
+                    value={formData.branchName}
                     onChange={handleChange}
                   />
                 </div>
@@ -191,6 +248,7 @@ const CreateClient = () => {
                     type="text"
                     name="accountHolderName"
                     className="form-control"
+                    value={formData.accountHolderName}
                     onChange={handleChange}
                   />
                 </div>
@@ -200,6 +258,7 @@ const CreateClient = () => {
                     type="text"
                     name="accountNumber"
                     className="form-control"
+                    value={formData.accountNumber}
                     onChange={handleChange}
                   />
                 </div>
@@ -209,64 +268,13 @@ const CreateClient = () => {
                     type="text"
                     name="ifscCode"
                     className="form-control"
+                    value={formData.ifscCode}
                     onChange={handleChange}
                   />
                 </div>
               </div>
             </div>
-
-            {/* Document Links */}
-            <div className="border rounded p-3 mb-4">
-              <h5 className="mb-3">Document Links</h5>
-              <div className="col-md-4 mb-3">
-  <label htmlFor="pancardLink">PAN Card Link</label>
-  <input
-    type="url"
-    id="pancardLink"
-    name="pancardLink"
-    className="form-control"
-    placeholder="Enter PAN card document link"
-    value={formData.pancardLink}
-    onChange={handleChange}
-  />
-</div>
-              <div className="col-md-6 mb-3">
-                <label>GST Certificate Link</label>
-                <input
-                  type="text"
-                  name="gstCertificateLink"
-                  className="form-control"
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="col-md-6 mb-3">
-                <label>Trademark Certificate Link</label>
-                <input
-                  type="text"
-                  name="trademarkCertificateLink"
-                  className="form-control"
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="col-md-6 mb-3">
-                <label>Cancelled Cheque Link</label>
-                <input
-                  type="text"
-                  name="cancelChequeLink"
-                  className="form-control"
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="col-md-6 mb-3">
-                <label>Signature Link</label>
-                <input
-                  type="text"
-                  name="signatureLink"
-                  className="form-control"
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
+            
 
             <div className="text-end mt-3">
               <button type="submit" className="btn btn-primary px-4">
