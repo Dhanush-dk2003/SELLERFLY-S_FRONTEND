@@ -16,7 +16,7 @@ import { MessageStatusContext } from "./contexts/MessageStatusContext";
 import React, { useContext } from "react";
 import Profilepage from './pages/admin/profile/Profilepage';
 import Clientregistration from './pages/user/ClientRegister/Clientregistration.js';
-import Portalregistration from './pages/user/Portalregistration';
+import Portalregistration from './pages/user/PortalRegister/PortalRegistration.js';
 
 
 function App() {
