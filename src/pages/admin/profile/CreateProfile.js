@@ -315,7 +315,7 @@ const handleCloseSnackbar = () =>
                       <option value="">Select</option>
                       <option value="ADMIN">Admin</option>
                       <option value="MANAGER">Manager</option>
-                      <option value="USER">User</option>
+                      <option value="USER">Employee</option>
                     </select>
                   </div>
                   <div className="col-md-4 mb-3">

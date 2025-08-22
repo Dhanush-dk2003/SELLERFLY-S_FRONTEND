@@ -13,7 +13,6 @@ const Sidebar = () => {
   const isSmallScreen = useMediaQuery({ maxWidth: 999 });
 
   const [activeItem, setActiveItem] = useState("");
-  // Define hasPendingMessageDot (replace with your actual logic)
   const { hasPendingMessageDot } = useContext(MessageStatusContext);
 
   useEffect(() => {
@@ -35,6 +34,8 @@ const Sidebar = () => {
       setActiveItem("client-registration");
     } else if (location.pathname.includes("portal-registration")) {
       setActiveItem("portal-registration");
+    } else if (location.pathname.includes("catalog-registration")) {
+      setActiveItem("catalog-registration");
     }
   }, [location.pathname]);
 
@@ -106,6 +107,7 @@ const Sidebar = () => {
               activeItem={activeItem}
               setActiveItem={setActiveItem}
               navigate={navigate}
+              hasPendingMessageDot={hasPendingMessageDot}
             />
           </div>
         </div>
@@ -129,6 +131,7 @@ const SidebarContent = ({
 
   return (
     <div className="d-flex flex-column h-100 px-3 pt-3">
+      {/* Logo */}
       <div className="text-center mb-4">
         <img
           src={logo}
@@ -138,8 +141,10 @@ const SidebarContent = ({
         />
       </div>
 
+      {/* Menu Items */}
       <div className="flex-grow-1 text-center mt-5">
         <ul className="nav flex-column w-100 mt-5">
+          {/* ADMIN & MANAGER */}
           {(user?.role === "ADMIN" || user?.role === "MANAGER") && (
             <>
               <li className="nav-item mb-3">
@@ -161,6 +166,7 @@ const SidebarContent = ({
                   Projects
                 </button>
               </li>
+
               {user?.role === "MANAGER" && (
                 <li className="nav-item mb-3">
                   <button
@@ -175,38 +181,39 @@ const SidebarContent = ({
                   </button>
                 </li>
               )}
+
               {user?.role === "ADMIN" && (
-                <li className="nav-item mb-3">
-                  <button
-                    className={`nav-link w-100 rounded ${
-                      activeItem === "profile"
-                        ? "bg-dark text-white fw-bold"
-                        : "bg-light text-dark"
-                    }`}
-                    onClick={() => handleItemClick("profile", "/profile")}
-                  >
-                    Profile
-                  </button>
-                </li>
+                <>
+                  <li className="nav-item mb-3">
+                    <button
+                      className={`nav-link w-100 rounded ${
+                        activeItem === "profile"
+                          ? "bg-dark text-white fw-bold"
+                          : "bg-light text-dark"
+                      }`}
+                      onClick={() => handleItemClick("profile", "/profile")}
+                    >
+                      Profile
+                    </button>
+                  </li>
+                  <li className="nav-item mb-3">
+                    <button
+                      className={`nav-link w-100 rounded ${
+                        activeItem === "invoice"
+                          ? "bg-dark text-white fw-bold"
+                          : "bg-light text-dark"
+                      }`}
+                      onClick={() => handleItemClick("invoice", "/invoice")}
+                    >
+                      Invoice
+                    </button>
+                  </li>
+                </>
               )}
             </>
           )}
 
-          {user?.role === "ADMIN" && (
-            <li className="nav-item mb-3">
-              <button
-                className={`nav-link w-100 rounded ${
-                  activeItem === "invoice"
-                    ? "bg-dark text-white fw-bold"
-                    : "bg-light text-dark"
-                }`}
-                onClick={() => handleItemClick("invoice", "/invoice")}
-              >
-                Invoice
-              </button>
-            </li>
-          )}
-
+          {/* USER */}
           {user?.role === "USER" && (
             <li className="nav-item mb-3">
               <button
@@ -221,6 +228,8 @@ const SidebarContent = ({
               </button>
             </li>
           )}
+
+          {/* REGISTRATION TEAM */}
           {user?.department === "REGISTRATION TEAM" && (
             <>
               <li className="nav-item mb-3">
@@ -231,10 +240,7 @@ const SidebarContent = ({
                       : "bg-light text-dark"
                   }`}
                   onClick={() =>
-                    handleItemClick(
-                      "client-registration",
-                      "/client-registration"
-                    )
+                    handleItemClick("client-registration", "/client-registration")
                   }
                 >
                   Client Registration
@@ -248,10 +254,7 @@ const SidebarContent = ({
                       : "bg-light text-dark"
                   }`}
                   onClick={() =>
-                    handleItemClick(
-                      "portal-registration",
-                      "/portal-registration"
-                    )
+                    handleItemClick("portal-registration", "/portal-registration")
                   }
                 >
                   Portal Registration
@@ -260,6 +263,26 @@ const SidebarContent = ({
             </>
           )}
 
+          {/* KEY ACCOUNT MANAGEMENT */}
+{user?.department === "KEY ACC MANAGEMENT" && (
+  <li className="nav-item mb-3">
+    <button
+      className={`nav-link w-100 rounded ${
+        activeItem === "catalog-registration"
+          ? "bg-dark text-white fw-bold"
+          : "bg-light text-dark"
+      }`}
+      onClick={() =>
+        handleItemClick("catalog-registration", "/catalog-registration")
+      }
+    >
+      Catalog
+    </button>
+  </li>
+)}
+
+
+          {/* MESSAGE */}
           <li className="nav-item mb-3 position-relative">
             <button
               className={`nav-link w-100 rounded ${
@@ -281,6 +304,7 @@ const SidebarContent = ({
         </ul>
       </div>
 
+      {/* Logout */}
       <div className="text-center mt-auto pb-3">
         <button
           className="btn btn-outline-danger d-flex align-items-center justify-content-center w-100"

@@ -61,7 +61,7 @@ const removePortalRow = (index) => {
   if (!isEditing) return;
   setPortals((p) => {
     const removed = p[index];
-    if (removed.id) {
+    if (removed.id && window.confirm("Are you sure you want to remove portal?")) {
       setDeletedPortals((prev) => [...prev, removed.id]);
     }
     return p.filter((_, i) => i !== index);
@@ -73,12 +73,15 @@ const removePortalRow = (index) => {
   try {
     for (const p of portals) {
       const payload = {
-        portalName: p.portalName === "Custom" ? p.customPortal : p.portalName,
-        username: p.username,
-        password: p.password,
-        status: p.status || "TODO",
-        remarks: p.remarks || null,
-      };
+  portalName: p.portalName === "Custom" ? p.customPortal : p.portalName,
+  username: p.username,
+  password: p.password,
+  status: p.status || "TODO",
+  remarks: p.remarks || null,
+  portalLink: p.portalLink || null,
+  masterLink: p.masterLink || null,
+};
+
 
       if (p.id) {
         await API.put(`/portals/${p.id}`, payload);

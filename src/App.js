@@ -17,6 +17,7 @@ import React, { useContext } from "react";
 import Profilepage from './pages/admin/profile/Profilepage';
 import Clientregistration from './pages/user/ClientRegister/Clientregistration.js';
 import Portalregistration from './pages/user/PortalRegister/PortalRegistration.js';
+import CatalogRegistration from './pages/user/CatalogRegister/CatalogRegistration.js';
 
 
 function App() {
@@ -118,6 +119,16 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+  path="/catalog-registration"
+  element={
+    <ProtectedRoute allowedRoles={['USER']}>
+      <CatalogRegistration />
+    </ProtectedRoute>
+  }
+/>
+
+
 
           <Route
             path="/message"
