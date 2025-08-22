@@ -99,7 +99,7 @@ const CreatePortal = () => {
         <form onSubmit={handleSubmit}>
           {/* Company Name with Autocomplete */}
           <div className="mb-3 position-relative">
-            <label>Company Name</label>
+            <h4>Company Name</h4>
             <input
               type="text"
               className="form-control"

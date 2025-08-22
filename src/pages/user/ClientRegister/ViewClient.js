@@ -57,7 +57,7 @@ const ViewClient = ({ initialClient, onClose, onDelete }) => {
   const handleDelete = async () => {
     if (!window.confirm("Are you sure you want to delete this client?")) return;
     try {
-      const clientId = client.id || client._id;
+      const clientId = client.id;
       await API.delete(`/clients/${clientId}`);
       setSnackbar({
         show: true,

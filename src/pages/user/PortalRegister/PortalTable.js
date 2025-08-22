@@ -75,7 +75,7 @@ const PortalTable = () => {
               <tr>
                 <th>S.No</th>
                 <th>Company Name</th>
-                <th>Full Name</th>
+                <th>Client Name</th>
                 <th>Mobile Number</th>
                 <th>View Portals</th>
               </tr>

@@ -49,8 +49,8 @@ const ClientTable = () => {
   // Add this handler to update the table after deletion
   const handleClientDelete = (deletedClientId) => {
     // Use _id if your API returns _id in client objects
-    setClients((prevClients) => prevClients.filter((client) => client._id !== deletedClientId));
-    setFilteredClients((prevFiltered) => prevFiltered.filter((client) => client._id !== deletedClientId));
+    setClients((prevClients) => prevClients.filter((client) => client.id !== deletedClientId));
+setFilteredClients((prevFiltered) => prevFiltered.filter((client) => client.id !== deletedClientId));
   };
 
   if (selectedClient) {
