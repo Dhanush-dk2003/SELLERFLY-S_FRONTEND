@@ -2,7 +2,17 @@ import React, { useState } from "react";
 import Snackbar from "../../../components/Snackbar";
 
 const PORTAL_ENUM_STATUSES = ["TODO", "IN_PROGRESS", "DONE"];
-const COMMON_PORTALS = ["Amazon", "Flipkart", "Meesho", "JioMart", "Ajio","Amazon Bazaar","Shopify","Snapdeal", "Custom"];
+const COMMON_PORTALS = [
+  "Amazon",
+  "Flipkart",
+  "Meesho",
+  "JioMart",
+  "Ajio",
+  "Amazon Bazaar",
+  "Shopify",
+  "Snapdeal",
+  "Custom",
+];
 
 const CreatePortal = () => {
   const [clientQuery, setClientQuery] = useState("");
@@ -10,10 +20,24 @@ const CreatePortal = () => {
   const [clientId, setClientId] = useState(null);
 
   const [portals, setPortals] = useState([
-    { portalName: "", customPortal: "", username: "", password: "", status: "", remarks: "" },
+    {
+      portalName: "",
+      customPortal: "",
+      username: "",
+      password: "",
+      status: "",
+      remarks: "",
+      startDate: "",
+      endDate: "",
+      portalHealth: "",
+    },
   ]);
 
-  const [snackbar, setSnackbar] = useState({ show: false, message: "", type: "success" });
+  const [snackbar, setSnackbar] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
   const closeSnackbar = () => setSnackbar((s) => ({ ...s, show: false }));
 
   // 🔍 Autocomplete search
@@ -24,7 +48,9 @@ const CreatePortal = () => {
       return;
     }
     try {
-      const res = await fetch(`http://localhost:5000/api/clients/search/${query}`);
+      const res = await fetch(
+        `http://localhost:5000/api/clients/search/${query}`
+      );
       const data = await res.json();
       if (Array.isArray(data)) {
         setClientSuggestions(data);
@@ -52,14 +78,32 @@ const CreatePortal = () => {
   };
 
   const addPortalRow = () =>
-    setPortals((p) => [...p, { portalName: "", customPortal: "", username: "", password: "", status: "", remarks: "" }]);
+    setPortals((p) => [
+      ...p,
+      {
+        portalName: "",
+        customPortal: "",
+        username: "",
+        password: "",
+        status: "",
+        remarks: "",
+        startDate: "",
+        endDate: "",
+        portalHealth: "",
+      },
+    ]);
 
-  const removePortalRow = (index) => setPortals((p) => p.filter((_, i) => i !== index));
+  const removePortalRow = (index) =>
+    setPortals((p) => p.filter((_, i) => i !== index));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!clientId) {
-      setSnackbar({ show: true, message: "Please select a Client", type: "error" });
+      setSnackbar({
+        show: true,
+        message: "Please select a Client",
+        type: "error",
+      });
       return;
     }
 
@@ -71,6 +115,9 @@ const CreatePortal = () => {
         password: p.password,
         status: PORTAL_ENUM_STATUSES.includes(p.status) ? p.status : "TODO",
         remarks: p.remarks || null,
+        startDate: p.startDate || null,
+  endDate: p.endDate || null,
+  portalHealth: p.portalHealth || null,
       })),
     };
 
@@ -84,10 +131,26 @@ const CreatePortal = () => {
 
       if (!res.ok) throw new Error(result?.message || "Error creating portals");
 
-      setSnackbar({ show: true, message: "Portals created successfully!", type: "success" });
+      setSnackbar({
+        show: true,
+        message: "Portals created successfully!",
+        type: "success",
+      });
       setClientQuery("");
       setClientId(null);
-      setPortals([{ portalName: "", customPortal: "", username: "", password: "", status: "", remarks: "" }]);
+      setPortals([
+        {
+          portalName: "",
+          customPortal: "",
+          username: "",
+          password: "",
+          status: "",
+          remarks: "",
+          startDate: "",
+          endDate: "",
+          portalHealth: "",
+        },
+      ]);
     } catch (err) {
       setSnackbar({ show: true, message: err.message, type: "error" });
     }
@@ -109,7 +172,10 @@ const CreatePortal = () => {
               required
             />
             {clientSuggestions.length > 0 && (
-              <ul className="list-group position-absolute w-100" style={{ zIndex: 10 }}>
+              <ul
+                className="list-group position-absolute w-100"
+                style={{ zIndex: 10 }}
+              >
                 {clientSuggestions.map((c) => (
                   <li
                     key={c.id}
@@ -160,6 +226,20 @@ const CreatePortal = () => {
                     />
                   </div>
                 )}
+                <div className="col-md-4 mb-3">
+                  <label>Portal Health</label>
+                  <select
+                    name="portalHealth"
+                    value={portal.portalHealth}
+                    onChange={(e) => handlePortalChange(index, e)}
+                    className="form-control"
+                  >
+                    <option value="">Select</option>
+                    <option value="GOOD">Good</option>
+                    <option value="BAD">Bad</option>
+                    <option value="NEEDS_IMPROVEMENT">Needs Improvement</option>
+                  </select>
+                </div>
 
                 <div className="col-md-6 mb-3">
                   <label>Username</label>
@@ -182,6 +262,27 @@ const CreatePortal = () => {
                     onChange={(e) => handlePortalChange(index, e)}
                     className="form-control"
                     required
+                  />
+                </div>
+                <div className="col-md-4 mb-3">
+                  <label>Start Date</label>
+                  <input
+                    type="date"
+                    name="startDate"
+                    value={portal.startDate}
+                    onChange={(e) => handlePortalChange(index, e)}
+                    className="form-control"
+                  />
+                </div>
+
+                <div className="col-md-4 mb-3">
+                  <label>End Date</label>
+                  <input
+                    type="date"
+                    name="endDate"
+                    value={portal.endDate}
+                    onChange={(e) => handlePortalChange(index, e)}
+                    className="form-control"
                   />
                 </div>
 
@@ -215,7 +316,11 @@ const CreatePortal = () => {
               </div>
 
               {index > 0 && (
-                <button type="button" className="btn btn-danger btn-sm" onClick={() => removePortalRow(index)}>
+                <button
+                  type="button"
+                  className="btn btn-danger btn-sm"
+                  onClick={() => removePortalRow(index)}
+                >
                   Remove Portal
                 </button>
               )}
@@ -223,7 +328,11 @@ const CreatePortal = () => {
           ))}
 
           <div className="text-end">
-            <button type="button" className="btn btn-outline-primary me-2" onClick={addPortalRow}>
+            <button
+              type="button"
+              className="btn btn-outline-primary me-2"
+              onClick={addPortalRow}
+            >
               + Add Another Portal
             </button>
             <button type="submit" className="btn btn-primary px-4">
@@ -233,7 +342,12 @@ const CreatePortal = () => {
         </form>
       </div>
 
-      <Snackbar message={snackbar.message} show={snackbar.show} onClose={closeSnackbar} type={snackbar.type} />
+      <Snackbar
+        message={snackbar.message}
+        show={snackbar.show}
+        onClose={closeSnackbar}
+        type={snackbar.type}
+      />
     </div>
   );
 };

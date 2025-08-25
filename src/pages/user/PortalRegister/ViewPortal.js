@@ -78,6 +78,9 @@ const removePortalRow = (index) => {
   password: p.password,
   status: p.status || "TODO",
   remarks: p.remarks || null,
+  startDate: p.startDate || null,
+  endDate: p.endDate || null,
+  portalHealth: p.portalHealth || null,
   portalLink: p.portalLink || null,
   masterLink: p.masterLink || null,
 };
@@ -171,6 +174,21 @@ const removePortalRow = (index) => {
                     </>
                   )}
                 </div>
+                <div className="col-md-4 mb-3">
+  <label>Portal Health</label>
+  <select
+    name="portalHealth"
+    value={portal.portalHealth}
+    onChange={(e) => handleChange(index, e)}
+    className="form-control"
+    disabled={!isEditing}
+  >
+    <option value="">Select</option>
+    <option value="GOOD">Good</option>
+    <option value="BAD">Bad</option>
+    <option value="NEEDS_IMPROVEMENT">Needs Improvement</option>
+  </select>
+</div>
 
                 <div className="col-md-6 mb-3">
                   <label>Username</label>
@@ -195,6 +213,36 @@ const removePortalRow = (index) => {
                     disabled={!isEditing}
                   />
                 </div>
+                <div className="col-md-4 mb-3">
+  <label>Start Date</label>
+  <input
+    type="date"
+    name="startDate"
+    value={portal.startDate ? portal.startDate.split("T")[0] : ""}
+    onChange={(e) => handleChange(index, e)}
+    className="form-control"
+    disabled={!isEditing}
+  />
+</div>
+
+<div className="col-md-4 mb-3">
+  <label>End Date</label>
+  <input
+    type="date"
+    name="endDate"
+    value={portal.endDate ? portal.endDate.split("T")[0] : ""}
+    onChange={(e) => handleChange(index, e)}
+    className="form-control"
+    disabled={!isEditing}
+  />
+</div>
+
+
+
+
+
+
+
 
                 <div className="col-md-6 mb-3">
                   <label>Status</label>

@@ -96,9 +96,9 @@ const ViewClient = ({ initialClient, onClose, onDelete }) => {
 
           <h4 className="mb-4">Client Details</h4>
 
-          {/* Basic Info */}
+          {/* Client Information */}
           <div className="border rounded p-3 mb-4">
-            <h5 className="mb-3">Basic Information</h5>
+            <h5 className="mb-3">Client Information</h5>
             <div className="row">
               {[
                 { key: "fullName", label: "Full Name", type: "text" },
@@ -106,61 +106,97 @@ const ViewClient = ({ initialClient, onClose, onDelete }) => {
                 { key: "mobileNumber", label: "Mobile Number", type: "text" },
                 { key: "email", label: "Email", type: "email" },
                 { key: "budget", label: "Package (INR)", type: "number" },
-                { key: "address", label: "Address", type: "text" },
-                { key: "pickupAddress", label: "Pickup Address", type: "text" },
-                {
-                  key: "gstCertificateNumber",
-                  label: "GST Certificate Number",
-                  type: "text",
-                },
+                { key: "onboardedDate", label: "Onboarded Date", type: "date" },
+                { key: "category", label: "Category", type: "text" },
               ].map(({ key, label, type }) => (
-                <div className="col-md-6 mb-3" key={key}>
+                <div className="col-md-4 mb-3" key={key}>
                   <label>{label}</label>
                   <input
                     type={type}
                     name={key}
-                    value={client[key] || ""}
-                    onChange={handleChange}
                     className="form-control"
+                    value={
+                      key === "onboardedDate" && client[key]
+                        ? client[key].split("T")[0]
+                        : client[key] || ""
+                    }
+                    onChange={handleChange}
                     disabled={!isEditing}
                   />
                 </div>
               ))}
-            </div>
 
-            <div className="mb-3">
-              <label>Description</label>
-              <textarea
-                name="description"
-                className="form-control"
-                value={client.description || ""}
-                onChange={handleChange}
-                disabled={!isEditing}
-              />
-            </div>
+              <div className="col-md-6 mb-3 d-flex align-items-center">
+                <div className="form-check me-4">
+                  <input
+                    type="checkbox"
+                    name="aPlusContent"
+                    checked={client.aPlusContent || false}
+                    onChange={handleChange}
+                    className="form-check-input"
+                    id="aPlusContent"
+                    disabled={!isEditing}
+                  />
+                  <label className="form-check-label" htmlFor="aPlusContent">
+                    A+ Content
+                  </label>
+                </div>
+                <div className="form-check me-4">
+                  <input
+                    type="checkbox"
+                    name="brandWebstore"
+                    checked={client.brandWebstore || false}
+                    onChange={handleChange}
+                    className="form-check-input"
+                    id="brandWebstore"
+                    disabled={!isEditing}
+                  />
+                  <label className="form-check-label" htmlFor="brandWebstore">
+                    Brand Webstore
+                  </label>
+                </div>
+                <div className="form-check me-4">
+                  <input
+                    type="checkbox"
+                    name="brandRegistryDoc"
+                    checked={client.brandRegistryDoc || false}
+                    onChange={handleChange}
+                    className="form-check-input"
+                    id="brandRegistryDoc"
+                    disabled={!isEditing}
+                  />
+                  <label
+                    className="form-check-label"
+                    htmlFor="brandRegistryDoc"
+                  >
+                    Brand Registry
+                  </label>
+                </div>
+              </div>
 
-            <div className="form-check">
-              <input
-                type="checkbox"
-                name="aPlus"
-                checked={client.aPlus || false}
-                onChange={handleChange}
-                className="form-check-input"
-                disabled={!isEditing}
-              />
-              <label className="form-check-label">A+ Content</label>
-            </div>
+              <div className="col-md-12 mb-3">
+                <label>Address</label>
+                <textarea
+                  name="address"
+                  className="form-control"
+                  value={client.address || ""}
+                  onChange={handleChange}
+                  rows="3"
+                  disabled={!isEditing}
+                ></textarea>
+              </div>
 
-            <div className="form-check">
-              <input
-                type="checkbox"
-                name="brandWebstore"
-                checked={client.brandWebstore || false}
-                onChange={handleChange}
-                className="form-check-input"
-                disabled={!isEditing}
-              />
-              <label className="form-check-label">Brand Webstore</label>
+              <div className="col-md-12 mb-3">
+                <label>Pickup Address</label>
+                <textarea
+                  name="pickupAddress"
+                  className="form-control"
+                  value={client.pickupAddress || ""}
+                  onChange={handleChange}
+                  rows="3"
+                  disabled={!isEditing}
+                ></textarea>
+              </div>
             </div>
           </div>
 
@@ -190,30 +226,86 @@ const ViewClient = ({ initialClient, onClose, onDelete }) => {
             </div>
           </div>
 
-          {/* Documents Link */}
+          {/* Documents */}
           <div className="border rounded p-3 mb-4">
-            <h5 className="mb-3">Documents Link</h5>
-            {!isEditing ? (
-              client.documentsLink ? (
-                <a
-                  href={client.documentsLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  View Document
-                </a>
-              ) : (
-                <p className="text-muted">No link provided</p>
-              )
-            ) : (
-              <input
-                type="text"
-                name="documentsLink"
-                value={client.documentsLink || ""}
-                onChange={handleChange}
-                className="form-control"
-              />
-            )}
+            <h5 className="mb-3">Documents</h5>
+            <div className="d-flex flex-wrap mb-3">
+              {[
+                { key: "gstDoc", label: "GST" },
+                { key: "panDoc", label: "PAN Card" },
+                { key: "trademarkDoc", label: "Trademark" },
+                {
+                  key: "currentAccountDoc",
+                  label: "Current Account/Cancelled Cheque",
+                },
+              ].map(({ key, label }) => (
+                <div className="form-check me-3" key={key}>
+                  <input
+                    type="checkbox"
+                    name={key}
+                    checked={client[key] || false}
+                    onChange={handleChange}
+                    className="form-check-input me-2"
+                    id={key}
+                    disabled={!isEditing}
+                  />
+                  <label className="form-check-label me-5" htmlFor={key}>
+                    {label}
+                  </label>
+                </div>
+              ))}
+            </div>
+
+            <div className="row">
+              <div className="col-md-4 mb-3">
+                <label>GST Certificate Number</label>
+                <input
+                  type="text"
+                  name="gstCertificateNumber"
+                  className="form-control"
+                  value={client.gstCertificateNumber || ""}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <label>Documents Link</label>
+                {!isEditing ? (
+                  client.documentsLink ? (
+                    <a
+                      href={client.documentsLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View Document
+                    </a>
+                  ) : (
+                    <p className="text-muted">No link provided</p>
+                  )
+                ) : (
+                  <input
+                    type="url"
+                    name="documentsLink"
+                    className="form-control"
+                    value={client.documentsLink || ""}
+                    onChange={handleChange}
+                  />
+                )}
+              </div>
+
+              <div className="col-md-12 mb-3">
+                <label>Description</label>
+                <textarea
+                  name="description"
+                  className="form-control"
+                  value={client.description || ""}
+                  onChange={handleChange}
+                  rows="3"
+                  disabled={!isEditing}
+                ></textarea>
+              </div>
+            </div>
           </div>
 
           {/* Buttons */}

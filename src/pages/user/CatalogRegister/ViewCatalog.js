@@ -6,7 +6,11 @@ const STATUS_OPTIONS = ["TODO", "IN_PROGRESS", "DONE"];
 
 const ViewCatalog = ({ client, onClose }) => {
   const [portals, setPortals] = useState([]);
-  const [snackbar, setSnackbar] = useState({ show: false, message: "", type: "" });
+  const [snackbar, setSnackbar] = useState({
+    show: false,
+    message: "",
+    type: "",
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [deletedPortals, setDeletedPortals] = useState([]);
 
@@ -25,10 +29,6 @@ const ViewCatalog = ({ client, onClose }) => {
     });
   };
 
-  
-
- 
-
   const handleSave = async () => {
     try {
       for (const p of portals) {
@@ -40,6 +40,9 @@ const ViewCatalog = ({ client, onClose }) => {
           remarks: p.remarks || null,
           portalLink: p.portalLink || null,
           masterLink: p.masterLink || null,
+          startDate: p.startDate || null,
+          endDate: p.endDate || null,
+          portalHealth: p.portalHealth || null,
         };
 
         if (p.id) {
@@ -57,7 +60,11 @@ const ViewCatalog = ({ client, onClose }) => {
       }
       setDeletedPortals([]);
 
-      setSnackbar({ show: true, message: "Portals saved successfully", type: "success" });
+      setSnackbar({
+        show: true,
+        message: "Portals saved successfully",
+        type: "success",
+      });
       setIsEditing(false);
 
       const res = await API.get(`/portals/client/${client.id}`);
@@ -83,24 +90,81 @@ const ViewCatalog = ({ client, onClose }) => {
         </button>
 
         {portals.map((portal, index) => (
-          <div key={portal.id || index} className="border rounded p-3 mb-3 bg-light">
+          <div
+            key={portal.id || index}
+            className="border rounded p-3 mb-3 bg-light"
+          >
             <div className="row">
               {/* Read-only Portal Name */}
               <div className="col-md-6 mb-3">
                 <label>Portal Name</label>
-                <input className="form-control" value={portal.portalName} disabled />
+                <input
+                  className="form-control"
+                  value={portal.portalName}
+                  disabled
+                />
+              </div>
+              {/* Editable Portal Health */}
+              <div className="col-md-4 mb-3">
+                <label>Portal Health</label>
+                <select
+                  name="portalHealth"
+                  value={portal.portalHealth || ""}
+                  onChange={(e) => handleChange(index, e)}
+                  className="form-control"
+                  disabled={!isEditing}
+                >
+                  <option value="">Select</option>
+                  <option value="GOOD">Good</option>
+                  <option value="BAD">Bad</option>
+                  <option value="NEEDS_IMPROVEMENT">Needs Improvement</option>
+                </select>
               </div>
 
               {/* Read-only Username */}
               <div className="col-md-6 mb-3">
                 <label>Username</label>
-                <input className="form-control" value={portal.username} disabled />
+                <input
+                  className="form-control"
+                  value={portal.username}
+                  disabled
+                />
               </div>
 
               {/* Read-only Password */}
               <div className="col-md-6 mb-3">
                 <label>Password</label>
-                <input className="form-control" value={portal.password} disabled />
+                <input
+                  className="form-control"
+                  value={portal.password}
+                  disabled
+                />
+              </div>
+
+              {/* Editable Start Date */}
+              <div className="col-md-4 mb-3">
+                <label>Start Date</label>
+                <input
+                  type="date"
+                  name="startDate"
+                  value={portal.startDate ? portal.startDate.split("T")[0] : ""}
+                  onChange={(e) => handleChange(index, e)}
+                  className="form-control"
+                  disabled={!isEditing}
+                />
+              </div>
+
+              {/* Editable End Date */}
+              <div className="col-md-4 mb-3">
+                <label>End Date</label>
+                <input
+                  type="date"
+                  name="endDate"
+                  value={portal.endDate ? portal.endDate.split("T")[0] : ""}
+                  onChange={(e) => handleChange(index, e)}
+                  className="form-control"
+                  disabled={!isEditing}
+                />
               </div>
 
               {/* Editable Status */}
@@ -160,8 +224,6 @@ const ViewCatalog = ({ client, onClose }) => {
                 />
               </div>
             </div>
-
-           
           </div>
         ))}
 
@@ -186,7 +248,6 @@ const ViewCatalog = ({ client, onClose }) => {
               <button className="btn btn-danger me-2" onClick={onClose}>
                 Close
               </button>
-              
             </>
           )}
         </div>
