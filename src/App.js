@@ -18,6 +18,9 @@ import Profilepage from "./pages/admin/profile/Profilepage";
 import Clientregistration from "./pages/user/ClientRegister/Clientregistration.js";
 import Portalregistration from "./pages/user/PortalRegister/PortalRegistration.js";
 import CatalogRegistration from "./pages/user/CatalogRegister/CatalogRegistration.js";
+import GrowthManagement from "./pages/user/GrowthManagement/GrowthManagement.js";
+
+
 
 function App() {
   const { snackbarData } = useContext(MessageStatusContext); // ✅ now it works
@@ -122,6 +125,14 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["USER"]} allowedDepartments={["KEY ACC MANAGEMENT"]}>
               <CatalogRegistration />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/growth-management"
+          element={
+            <ProtectedRoute allowedRoles={["USER"]} allowedDepartments={["GROWTH MANAGEMENT"]}>
+              <GrowthManagement />
             </ProtectedRoute>
           }
         />

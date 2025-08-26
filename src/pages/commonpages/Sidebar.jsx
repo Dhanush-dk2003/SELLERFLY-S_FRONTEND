@@ -37,6 +37,9 @@ const Sidebar = () => {
     } else if (location.pathname.includes("catalog-registration")) {
       setActiveItem("catalog-registration");
     }
+    else if (location.pathname.includes("growth-management")) {
+      setActiveItem("growth-management");
+    }
   }, [location.pathname]);
 
   const handleLogout = () => {
@@ -277,6 +280,23 @@ const SidebarContent = ({
       }
     >
       Catalog
+    </button>
+  </li>
+)}
+ {/* KEY ACCOUNT MANAGEMENT */}
+{user?.department === "GROWTH MANAGEMENT" && (
+  <li className="nav-item mb-3">
+    <button
+      className={`nav-link w-100 rounded ${
+        activeItem === "growth-management"
+          ? "bg-dark text-white fw-bold"
+          : "bg-light text-dark"
+      }`}
+      onClick={() =>
+        handleItemClick("growth-management", "/growth-management")
+      }
+    >
+      Growth Manage
     </button>
   </li>
 )}
