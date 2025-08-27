@@ -131,7 +131,7 @@ const ViewgrowthClient = ({ initialClient, onClose }) => {
                 <input
                   type="number"
                   name="productCount"
-                  value={client.productCount }
+                  value={client.productCount}
                   onChange={handleChange}
                   className="form-control"
                   disabled={!isEditing}
