@@ -96,8 +96,7 @@ const FollowupTable = () => {
   return (
     <div>
       {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-        <h3 className="mb-0">Followups</h3>
+      <div className="d-flex justify-content-end align-items-center mb-4 flex-wrap gap-2">
         <div className="d-flex gap-2">
           <button className="btn btn-success" onClick={() => setShowAddForm(true)}>
             Add Followup
@@ -107,7 +106,7 @@ const FollowupTable = () => {
           ) : (
             <>
               <button className="btn btn-danger" onClick={handleDelete}>Confirm Delete</button>
-              <button className="btn btn-secondary" onClick={handleCancelDelete}>Cancel</button>
+              <button className="btn btn-secondary" onClick={handleCancelDelete}> X </button>
             </>
           )}
         </div>
@@ -132,12 +131,11 @@ const FollowupTable = () => {
 
         {/* Search */}
         <div>
-          <label className="form-label">Search</label>
-          <div className="d-flex">
+          <div className="d-flex mt-4">
             <input
               type="text"
               placeholder="Search..."
-              className="form-control"
+              className="form-control "
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={handleKeyDown}
