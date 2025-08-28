@@ -96,7 +96,7 @@ const ClientTable = () => {
   return (
     <>
       {/* Top Bar */}
-      <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+      <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         {/* Activate Button on Left */}
         <button
           className="btn btn-success"
