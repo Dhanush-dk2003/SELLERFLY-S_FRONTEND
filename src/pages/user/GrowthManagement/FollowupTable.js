@@ -1,7 +1,8 @@
-// src/pages/growth/FollowupTable.js
 import React, { useEffect, useState, useCallback } from "react";
 import API from "../../../axios";
 import Snackbar from "../../../components/Snackbar";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 const FollowupTable = () => {
   // Data states
@@ -23,9 +24,24 @@ const FollowupTable = () => {
   const [portalName, setPortalName] = useState("");
   const [description, setDescription] = useState("");
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10; // change rows per page if needed
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentFollowups = followups.slice(indexOfFirstItem, indexOfLastItem);
+
+  const totalPages = Math.ceil(followups.length / itemsPerPage);
+
   // Snackbar
-  const [snackbar, setSnackbar] = useState({ show: false, message: "", type: "success" });
-  const handleCloseSnackbar = () => setSnackbar((prev) => ({ ...prev, show: false }));
+  const [snackbar, setSnackbar] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
+  const handleCloseSnackbar = () =>
+    setSnackbar((prev) => ({ ...prev, show: false }));
 
   /** 🔹 Fetch followups */
   const fetchFollowups = useCallback(async () => {
@@ -35,7 +51,11 @@ const FollowupTable = () => {
       });
       setFollowups(res.data || []);
     } catch {
-      setSnackbar({ show: true, message: "Failed to fetch follow-ups.", type: "error" });
+      setSnackbar({
+        show: true,
+        message: "Failed to fetch follow-ups.",
+        type: "error",
+      });
     }
   }, [searchQuery, startDate, endDate]);
 
@@ -54,7 +74,11 @@ const FollowupTable = () => {
         setSelectedIds([]);
         setDeleteMode(false);
         fetchFollowups();
-        setSnackbar({ show: true, message: "Deleted successfully.", type: "success" });
+        setSnackbar({
+          show: true,
+          message: "Deleted successfully.",
+          type: "success",
+        });
       } catch {
         setSnackbar({ show: true, message: "Delete failed.", type: "error" });
       }
@@ -71,13 +95,23 @@ const FollowupTable = () => {
   /** 🔹 Add followup */
   const handleAdd = async () => {
     try {
-      await API.post("/growth/followup", { companyName, portalName, description });
-      setCompanyName(""); setPortalName(""); setDescription("");
+      await API.post("/growth/followup", {
+        companyName,
+        portalName,
+        description,
+      });
+      setCompanyName("");
+      setPortalName("");
+      setDescription("");
       setShowAddForm(false);
       fetchFollowups();
       setSnackbar({ show: true, message: "Followup added.", type: "success" });
     } catch {
-      setSnackbar({ show: true, message: "Failed to add follow-up.", type: "error" });
+      setSnackbar({
+        show: true,
+        message: "Failed to add follow-up.",
+        type: "error",
+      });
     }
   };
 
@@ -92,21 +126,75 @@ const FollowupTable = () => {
       setCompanySuggestions([]);
     }
   };
+  /** 🔹 Export table to Excel */
+  const handleExport = () => {
+    const worksheet = XLSX.utils.json_to_sheet(
+      followups.map((f, idx) => ({
+        "S.No": idx + 1,
+        Date: new Date(f.date).toLocaleDateString(),
+        Company: f.companyName,
+        Subject: f.portalName,
+        Description: f.description,
+      }))
+    );
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Followups");
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+
+    // 🔹 Generate DD-MM-YYYY date string
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, "0");
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const year = today.getFullYear();
+    const dateStr = `${day}-${month}-${year}`;
+
+    // 🔹 Counter
+    let counter = parseInt(localStorage.getItem("exportCounter") || "1", 10);
+const fileName = `Followups-${dateStr}(${String(counter).padStart(2, "0")}).xlsx`;
+localStorage.setItem("exportCounter", counter + 1);
+
+
+    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(data, fileName);
+  };
 
   return (
     <div>
       {/* Header */}
-      <div className="d-flex justify-content-end align-items-center mb-4 flex-wrap gap-2">
+      <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        {/* Export Button (Left) */}
+        <button className="btn btn-outline-success" onClick={handleExport}>
+          Export to Excel
+        </button>
+
+        {/* Other Buttons (Right) */}
         <div className="d-flex gap-2">
-          <button className="btn btn-success" onClick={() => setShowAddForm(true)}>
+          <button
+            className="btn btn-success"
+            onClick={() => setShowAddForm(true)}
+          >
             Add Followup
           </button>
           {!deleteMode ? (
-            <button className="btn btn-danger" onClick={handleDelete}>Delete</button>
+            <button className="btn btn-danger" onClick={handleDelete}>
+              Delete
+            </button>
           ) : (
             <>
-              <button className="btn btn-danger" onClick={handleDelete}>Confirm Delete</button>
-              <button className="btn btn-secondary" onClick={handleCancelDelete}> X </button>
+              <button className="btn btn-danger" onClick={handleDelete}>
+                Confirm Delete
+              </button>
+              <button
+                className="btn btn-secondary"
+                onClick={handleCancelDelete}
+              >
+                X
+              </button>
             </>
           )}
         </div>
@@ -115,6 +203,7 @@ const FollowupTable = () => {
       {/* Filters */}
       <div className="d-flex justify-content-between flex-wrap gap-3 mb-4">
         {/* Date range */}
+
         <div className="d-flex gap-2">
           {["Start Date", "End Date"].map((label, i) => (
             <div key={label}>
@@ -123,7 +212,11 @@ const FollowupTable = () => {
                 type="date"
                 className="form-control"
                 value={i === 0 ? startDate : endDate}
-                onChange={(e) => (i === 0 ? setStartDate(e.target.value) : setEndDate(e.target.value))}
+                onChange={(e) =>
+                  i === 0
+                    ? setStartDate(e.target.value)
+                    : setEndDate(e.target.value)
+                }
               />
             </div>
           ))}
@@ -141,7 +234,10 @@ const FollowupTable = () => {
               onKeyDown={handleKeyDown}
               style={{ maxWidth: "250px" }}
             />
-            <button className="btn btn-primary ms-2" onClick={() => setSearchQuery(search)}>
+            <button
+              className="btn btn-primary ms-2"
+              onClick={() => setSearchQuery(search)}
+            >
               Search
             </button>
           </div>
@@ -150,12 +246,18 @@ const FollowupTable = () => {
 
       {/* Add Followup Modal */}
       {showAddForm && (
-        <div className="modal fade show" style={{ display: "block", background: "rgba(0,0,0,0.5)" }}>
+        <div
+          className="modal fade show"
+          style={{ display: "block", background: "rgba(0,0,0,0.5)" }}
+        >
           <div className="modal-dialog modal-lg">
             <div className="modal-content p-3">
               <div className="modal-header">
                 <h5 className="modal-title">Add Followup</h5>
-                <button className="btn-close" onClick={() => setShowAddForm(false)}></button>
+                <button
+                  className="btn-close"
+                  onClick={() => setShowAddForm(false)}
+                ></button>
               </div>
               <div className="modal-body">
                 <div className="row g-3">
@@ -186,7 +288,7 @@ const FollowupTable = () => {
                     )}
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label">Portal Name</label>
+                    <label className="form-label">Subject</label>
                     <input
                       type="text"
                       className="form-control"
@@ -206,8 +308,15 @@ const FollowupTable = () => {
                 </div>
               </div>
               <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={() => setShowAddForm(false)}>Cancel</button>
-                <button className="btn btn-success" onClick={handleAdd}>Save</button>
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setShowAddForm(false)}
+                >
+                  Cancel
+                </button>
+                <button className="btn btn-success" onClick={handleAdd}>
+                  Save
+                </button>
               </div>
             </div>
           </div>
@@ -223,20 +332,27 @@ const FollowupTable = () => {
                 <th style={{ width: "60px" }}>S.No</th>
                 <th style={{ width: "120px" }}>Date</th>
                 <th style={{ width: "180px" }}>Company</th>
-                <th style={{ width: "180px" }}>Portal</th>
+                <th style={{ width: "180px" }}>Subject</th>
                 <th>Description</th>
-                {deleteMode && <th className="text-center" style={{ width: "80px" }}>Select</th>}
+                {deleteMode && (
+                  <th className="text-center" style={{ width: "80px" }}>
+                    Select
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>
               {followups.length > 0 ? (
-                followups.map((f, idx) => (
+                currentFollowups.map((f, idx) => (
                   <tr key={f.id}>
-                    <td>{idx + 1}</td>
+                    <td>{indexOfFirstItem + idx + 1}</td>
+
                     <td>{new Date(f.date).toLocaleDateString()}</td>
                     <td>{f.companyName}</td>
                     <td>{f.portalName}</td>
-                    <td style={{ whiteSpace: "normal", wordWrap: "break-word" }}>
+                    <td
+                      style={{ whiteSpace: "normal", wordWrap: "break-word" }}
+                    >
                       {f.description}
                     </td>
                     {deleteMode && (
@@ -246,7 +362,9 @@ const FollowupTable = () => {
                           checked={selectedIds.includes(f.id)}
                           onChange={(e) =>
                             setSelectedIds((prev) =>
-                              e.target.checked ? [...prev, f.id] : prev.filter((id) => id !== f.id)
+                              e.target.checked
+                                ? [...prev, f.id]
+                                : prev.filter((id) => id !== f.id)
                             )
                           }
                         />
@@ -264,6 +382,52 @@ const FollowupTable = () => {
             </tbody>
           </table>
         </div>
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="d-flex justify-content-center mt-3">
+            <nav>
+              <ul className="pagination">
+                <li
+                  className={`page-item ${currentPage === 1 ? "disabled" : ""}`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                  >
+                    Previous
+                  </button>
+                </li>
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <li
+                    key={i}
+                    className={`page-item ${
+                      currentPage === i + 1 ? "active" : ""
+                    }`}
+                  >
+                    <button
+                      className="page-link"
+                      onClick={() => setCurrentPage(i + 1)}
+                    >
+                      {i + 1}
+                    </button>
+                  </li>
+                ))}
+                <li
+                  className={`page-item ${
+                    currentPage === totalPages ? "disabled" : ""
+                  }`}
+                >
+                  <button
+                    className="page-link"
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                  >
+                    Next
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        )}
       </div>
 
       {/* Snackbar */}

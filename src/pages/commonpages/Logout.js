@@ -33,7 +33,7 @@ const Logout = () => {
 }, [logout, navigate]);
 
   return (
-    <div className="d-flex flex-column justify-content-center align-items-center vh-100">
+    <div className="d-flex flex-column justify-content-center align-items-center vh-100 px-3 text-center">
       <h2>You have been successfully logged out 👋</h2>
       <p>Redirecting to login page in few seconds...</p>
     </div>

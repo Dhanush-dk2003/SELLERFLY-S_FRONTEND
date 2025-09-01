@@ -82,12 +82,22 @@ const ViewgrowthClient = ({ initialClient, onClose }) => {
               id="isActiveSwitch"
               name="isActive"
               checked={client.isActive || false}
-              onChange={(e) =>
-                setClient((prev) => ({
-                  ...prev,
-                  isActive: e.target.checked,
-                }))
-              }
+              onChange={(e) => {
+                const confirmed = window.confirm(
+                  `Are you sure you want to mark this client as ${
+                    e.target.checked ? "Active" : "Inactive"
+                  }?`
+                );
+                if (confirmed) {
+                  setClient((prev) => ({
+                    ...prev,
+                    isActive: e.target.checked,
+                  }));
+                } else {
+                  // revert toggle back if user cancels
+                  e.target.checked = !e.target.checked;
+                }
+              }}
               disabled={!isEditing}
             />
             <label className="form-check-label" htmlFor="isActiveSwitch">
