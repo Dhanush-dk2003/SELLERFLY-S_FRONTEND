@@ -185,6 +185,7 @@ const handleCloseSnackbar = () =>
                       name="employeeId"
                       className="form-control"
                       value={formData.employeeId || ""}
+                      readOnly
                     />
                   </div>
                   <div className="col-md-4 mb-3">
