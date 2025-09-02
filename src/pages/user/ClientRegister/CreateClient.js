@@ -49,7 +49,8 @@ const CreateClient = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch("http://localhost:5000/api/clients/create", {
+      // const response = await fetch("http://localhost:5000/api/clients/create", {
+      const response = await fetch("https://sellerfly-backend-production.up.railway.app/api/clients/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

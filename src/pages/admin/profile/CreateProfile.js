@@ -36,8 +36,8 @@ const handleCloseSnackbar = () =>
   setSnackbar((prev) => ({ ...prev, show: false }));
   useEffect(() => {
   const fetchNextId = async () => {
-  //  const res = await fetch('https://sellerfly-s-backend.onrender.com/api/users/next-id');
-   const res = await fetch('http://localhost:5000/api/users/next-id');
+    const res = await fetch('https://sellerfly-backend-production.up.railway.app/api/users/next-id');
+  //  const res = await fetch('http://localhost:5000/api/users/next-id');
 
     const data = await res.json();
     setFormData((prev) => ({ ...prev, employeeId: data.nextId }));
@@ -94,7 +94,8 @@ const handleCloseSnackbar = () =>
   }
 
   try {
-    const response = await fetch("http://localhost:5000/api/users/create", {
+    // const response = await fetch("http://localhost:5000/api/users/create", {
+    const response = await fetch("https://sellerfly-backend-production.up.railway.app/api/users/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
