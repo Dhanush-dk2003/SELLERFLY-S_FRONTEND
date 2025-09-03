@@ -33,7 +33,9 @@ const CreateProfileForm = () => {
   });
 
   const fetchNextId = async () => {
-    const res = await fetch('https://sellerfly-backend-production.up.railway.app/api/users/next-id');
+    const res = await fetch(
+      "https://sellerfly-backend-production.up.railway.app/api/users/next-id"
+    );
     // const res = await fetch("http://localhost:5000/api/users/next-id");
     const data = await res.json();
     setFormData((prev) => ({ ...prev, employeeId: data.nextId }));
@@ -97,10 +99,13 @@ const CreateProfileForm = () => {
       }
 
       // const response = await fetch("http://localhost:5000/api/users/create", {
-      const response = await fetch("https://sellerfly-backend-production.up.railway.app/api/users/create", {
-        method: "POST",
-        body: formDataToSend,
-      });
+      const response = await fetch(
+        "https://sellerfly-backend-production.up.railway.app/api/users/create",
+        {
+          method: "POST",
+          body: formDataToSend,
+        }
+      );
 
       const result = await response.json();
       if (response.ok) {
