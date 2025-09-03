@@ -24,7 +24,7 @@ const ProfileTable = () => {
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
-        const res = await API.get("/profile");
+        const res = await API.get("/users/profile");
         const sorted = sortProfiles(res.data);
         setProfiles(sorted);
         setFilteredProfiles(sorted);
@@ -37,20 +37,28 @@ const ProfileTable = () => {
   }, []);
 
   const handleSearch = async () => {
-    try {
-      const res = await API.get(`/profile/search/${searchId}`);
-      const result = res.data;
+  const trimmedSearch = searchId.trim();
+  if (!trimmedSearch) {
+    // If search is empty or just spaces, show full table
+    setFilteredProfiles(profiles);
+    return;
+  }
 
-      if (Array.isArray(result)) {
-        setFilteredProfiles(result);
-      } else {
-        setFilteredProfiles([result]);
-      }
-    } catch (err) {
-      setFilteredProfiles([]);
-      alert("Profile not found");
+  try {
+    const res = await API.get(`/users/search/${trimmedSearch}`);
+    const result = res.data;
+
+    if (Array.isArray(result)) {
+      setFilteredProfiles(result);
+    } else {
+      setFilteredProfiles([result]);
     }
-  };
+  } catch (err) {
+    setFilteredProfiles([]);
+    alert("Profile not found");
+  }
+};
+
 
   const sortProfiles = (data) => {
     return [...data].sort((a, b) => {
@@ -72,12 +80,21 @@ const ProfileTable = () => {
       setFilteredProfiles(filtered);
     }
   };
+  const fetchProfiles = async () => {
+    const res = await API.get("/users/profile");
+    setProfiles(res.data);
+  };
+
+  useEffect(() => {
+    fetchProfiles();
+  }, []);
 
   if (selectedProfile) {
     return (
       <ViewProfile
         initialProfile={selectedProfile}
         onClose={() => setSelectedProfile(null)}
+        onDeleteSuccess={fetchProfiles}
       />
     );
   }
@@ -85,40 +102,39 @@ const ProfileTable = () => {
   return (
     <>
       <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-  {/* Department Filter */}
-  <div className="me-2 mb-2">
-    <select
-      className="form-select"
-      style={{ maxWidth: "200px" }}
-      value={selectedDepartment}
-      onChange={handleDepartmentFilter}
-    >
-      <option value="">All Departments</option>
-      {departmentOrder.map((dept) => (
-        <option key={dept} value={dept}>
-          {dept}
-        </option>
-      ))}
-    </select>
-  </div>
+        {/* Department Filter */}
+        <div className="me-2 mb-2">
+          <select
+            className="form-select"
+            style={{ maxWidth: "200px" }}
+            value={selectedDepartment}
+            onChange={handleDepartmentFilter}
+          >
+            <option value="">All Departments</option>
+            {departmentOrder.map((dept) => (
+              <option key={dept} value={dept}>
+                {dept}
+              </option>
+            ))}
+          </select>
+        </div>
 
-  {/* Search Input */}
-  <div className="d-flex align-items-center mb-2">
-    <input
-      type="text"
-      className="form-control"
-      placeholder="Search by ID or Name"
-      value={searchId}
-      onChange={(e) => setSearchId(e.target.value)}
-      onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-      style={{ maxWidth: "300px" }}
-    />
-    <button className="btn btn-primary ms-2" onClick={handleSearch}>
-      Search
-    </button>
-  </div>
-</div>
-
+        {/* Search Input */}
+        <div className="d-flex align-items-center mb-2">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Search by ID or Name"
+            value={searchId}
+            onChange={(e) => setSearchId(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+            style={{ maxWidth: "300px" }}
+          />
+          <button className="btn btn-primary ms-2" onClick={handleSearch}>
+            Search
+          </button>
+        </div>
+      </div>
 
       <div className="card mt-4 shadow border p-3">
         <div className="d-flex justify-content-between align-items-center mb-3">
@@ -140,7 +156,7 @@ const ProfileTable = () => {
             </thead>
             <tbody>
               {filteredProfiles.map((profile, idx) => (
-                <tr key={profile._id || idx}>
+                <tr key={profile.id || idx}>
                   <td>{idx + 1}</td>
                   <td>{profile.department}</td>
                   <td>{profile.employeeId}</td>

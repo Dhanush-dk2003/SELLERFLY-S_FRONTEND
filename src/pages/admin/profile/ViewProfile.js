@@ -1,120 +1,223 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import API from "../../../axios";
 import Snackbar from "../../../components/Snackbar";
-
+import { fileTypeFromBuffer } from "file-type";
 
 const ViewProfile = ({ initialProfile, onClose }) => {
   const [profile, setProfile] = useState(initialProfile);
   const [isEditing, setIsEditing] = useState(false);
-  const [newProfilePicBase64, setNewProfilePicBase64] = useState(null);
-  const [snackbar, setSnackbar] = useState({
-  show: false,
-  message: "",
-  type: "success", // can be "success", "error", or "warning"
-});
+  const [newProfilePic, setNewProfilePic] = useState(null);
+  const [profilePicUrl, setProfilePicUrl] = useState(null);
+  const [isImage, setIsImage] = useState(false);
+  const profilePicRef = useRef(null);
 
-const handleCloseSnackbar = () =>
-  setSnackbar((prev) => ({ ...prev, show: false }));
+  const [snackbar, setSnackbar] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
+
+  // ======================== Fetch Profile Picture ========================
+  const fetchProfilePicture = async (employeeId) => {
+    if (!employeeId) return null;
+    try {
+      const response = await API.get(`/users/profile-pic/${employeeId}`, {
+        responseType: "blob",
+        timeout: 10000,
+      });
+
+      if (response.data instanceof Blob && response.data.size > 0) {
+        const contentType = response.headers["content-type"] || response.data.type;
+        if (contentType && contentType.startsWith("image/")) {
+          const url = URL.createObjectURL(response.data);
+          profilePicRef.current = url; // store for cleanup
+
+          // Optional: verify with file-type library
+          try {
+            const arrayBuffer = await response.data.arrayBuffer();
+            const type = await fileTypeFromBuffer(arrayBuffer);
+            if (type && !type.mime.startsWith("image/")) {
+              console.warn("File-type detection suggests non-image file:", type);
+            }
+          } catch (fileTypeError) {
+            console.warn("File-type detection failed:", fileTypeError);
+          }
+
+          return url;
+        } else {
+          throw new Error(`Invalid content type: ${contentType}`);
+        }
+      } else {
+        throw new Error("Empty or invalid response");
+      }
+    } catch (error) {
+      console.error("Profile picture fetch error:", error);
+      if (error.response?.status !== 404) {
+        setSnackbar({
+          show: true,
+          message: `Failed to load profile picture: ${error.response?.data?.message || error.message}`,
+          type: "warning",
+        });
+      }
+      return null;
+    }
+  };
+
+  // ======================== Load Profile Picture ========================
+  useEffect(() => {
+    if (profilePicRef.current) {
+      URL.revokeObjectURL(profilePicRef.current);
+      profilePicRef.current = null;
+    }
+
+    const loadProfilePic = async () => {
+      if (profile?.employeeId && profile.hasProfilePic) {
+        const url = await fetchProfilePicture(profile.employeeId);
+        setProfilePicUrl(url);
+        setIsImage(!!url);
+      } else {
+        setProfilePicUrl(null);
+        setIsImage(false);
+      }
+    };
+
+    loadProfilePic();
+
+    return () => {
+      if (profilePicRef.current) {
+        URL.revokeObjectURL(profilePicRef.current);
+        profilePicRef.current = null;
+      }
+    };
+  }, [profile?.employeeId, profile?.hasProfilePic]);
+
+  // ======================== Validate New Profile Picture ========================
+  useEffect(() => {
+    if (!newProfilePic?.file) return;
+
+    const validateNewPic = async () => {
+      try {
+        const arrayBuffer = await newProfilePic.file.arrayBuffer();
+        const type = await fileTypeFromBuffer(arrayBuffer);
+        if (type?.mime.startsWith("image/") || newProfilePic.file.type.startsWith("image/")) {
+          setIsImage(true);
+        } else {
+          setIsImage(false);
+          setSnackbar({ show: true, message: "Selected file is not a valid image", type: "warning" });
+        }
+      } catch (err) {
+        console.error("File type validation error:", err);
+        setIsImage(false);
+      }
+    };
+
+    validateNewPic();
+
+    return () => {
+      if (newProfilePic?.previewUrl) {
+        URL.revokeObjectURL(newProfilePic.previewUrl);
+      }
+    };
+  }, [newProfilePic]);
+
+  // ======================== Handlers ========================
+  const handleCloseSnackbar = () => setSnackbar(prev => ({ ...prev, show: false }));
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setProfile((prev) => ({ ...prev, [name]: value }));
+    setProfile(prev => ({ ...prev, [name]: value }));
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    const reader = new FileReader();
+    if (!file) return;
 
-    reader.onloadend = () => {
-      setNewProfilePicBase64(reader.result);
-      setProfile((prev) => ({
-        ...prev,
-        profilePic: reader.result,
-      }));
-    };
-
-    if (file) {
-      reader.readAsDataURL(file);
+    if (file.size > 5 * 1024 * 1024) {
+      setSnackbar({ show: true, message: "File size must be less than 5MB", type: "error" });
+      return;
     }
+
+    if (!file.type.startsWith("image/")) {
+      setSnackbar({ show: true, message: "Please select a valid image file", type: "error" });
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    setNewProfilePic({ file, previewUrl });
   };
 
   const handleEdit = () => setIsEditing(true);
 
+  const handleCancel = () => {
+    setIsEditing(false);
+    if (newProfilePic?.previewUrl) URL.revokeObjectURL(newProfilePic.previewUrl);
+    setNewProfilePic(null);
+    setProfile(initialProfile);
+  };
+
   const handleSave = async () => {
     try {
-      const updatedProfile = { ...profile };
+      const formDataToSend = new FormData();
+      Object.keys(profile).forEach(key => {
+        if (key !== "profilePic" && profile[key] != null) formDataToSend.append(key, profile[key]);
+      });
+      if (newProfilePic?.file) formDataToSend.append("profilePic", newProfilePic.file);
 
-      if (newProfilePicBase64) {
-        updatedProfile.profilePic = newProfilePicBase64;
-      }
-      // console.log(updatedProfile.profilePic)
+      await API.put(`/users/profile/${profile.employeeId}`, formDataToSend, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-      await API.put(`/profile/${profile.employeeId}`, updatedProfile);
-
-      const refreshed = await API.get(`/profile/${profile.employeeId}`);
+      const refreshed = await API.get(`/users/profile/${profile.employeeId}`);
       setProfile(refreshed.data);
 
-      setSnackbar({
-  show: true,
-  message: "Profile updated successfully!",
-  type: "success",
-});
+      if (refreshed.data.hasProfilePic) {
+        const url = await fetchProfilePicture(refreshed.data.employeeId);
+        setProfilePicUrl(url);
+        setIsImage(!!url);
+      } else {
+        setProfilePicUrl(null);
+        setIsImage(false);
+      }
 
+      setSnackbar({ show: true, message: "Profile updated successfully!", type: "success" });
       setIsEditing(false);
-      setNewProfilePicBase64(null);
+      if (newProfilePic?.previewUrl) URL.revokeObjectURL(newProfilePic.previewUrl);
+      setNewProfilePic(null);
     } catch (err) {
-      console.error(err);
+      console.error("Save Profile Error:", err);
       setSnackbar({
-  show: true,
-  message: "Failed to update profile",
-  type: "error",
-});
-
+        show: true,
+        message: `Failed to update profile: ${err.response?.data?.message || err.message}`,
+        type: "error",
+      });
     }
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete this profile?"))
-      return;
-
+    if (!window.confirm("Are you sure you want to delete this profile?")) return;
     try {
-      await API.delete(`/profile/${profile.employeeId}`);
-      setSnackbar({
-  show: true,
-  message: "Profile deleted successfully!",
-  type: "success",
-});
-
+      await API.delete(`/users/profile/${profile.employeeId}`);
+      setSnackbar({ show: true, message: "Profile deleted successfully!", type: "success" });
       setProfile(null);
+      onClose();
     } catch (err) {
       console.error(err);
-      setSnackbar({
-  show: true,
-  message: "Failed to delete profile",
-  type: "error",
-});
-
+      setSnackbar({ show: true, message: `Failed to delete profile: ${err.response?.data?.message || err.message}`, type: "error" });
     }
   };
 
-  const formatDate = (dateStr) =>
-    dateStr ? new Date(dateStr).toISOString().split("T")[0] : "";
+  const formatDate = (dateStr) => (dateStr ? new Date(dateStr).toISOString().split("T")[0] : "");
 
+  // ======================== Render ========================
   return (
     <div className="d-flex">
-      <div className="container py-4 ">
+      <div className="container py-4">
         {profile && (
           <div className="position-relative p-4 bg-white rounded shadow">
-            {/* X Close Button */}
             <button
               onClick={onClose}
               className="btn position-absolute top-0 end-0 m-0"
-              style={{
-                zIndex: 10,
-                border: "none",
-                fontSize: "2rem",
-                lineHeight: "1",
-              }}
+              style={{ zIndex: 10, border: "none", fontSize: "2rem", lineHeight: "1" }}
               aria-label="Close"
             >
               &times;
@@ -124,7 +227,7 @@ const handleCloseSnackbar = () =>
 
             <form>
               <div className="row">
-                {/* Profile Picture */}
+                {/* ===== Profile Picture ===== */}
                 <div className="col-md-3 d-flex justify-content-center align-items-start">
                   <div className="text-center">
                     <div
@@ -141,77 +244,45 @@ const handleCloseSnackbar = () =>
                     >
                       {isEditing ? (
                         <>
-                          <label
-                            htmlFor="editProfilePic"
-                            style={{
-                              cursor: "pointer",
-                              display: "block",
-                              height: "100%",
-                            }}
-                          >
-                            {newProfilePicBase64 || profile.profilePic ? (
+                          <label htmlFor="editProfilePic" style={{ cursor: "pointer", display: "block", height: "100%" }}>
+                            {newProfilePic && isImage ? (
                               <img
-                                src={newProfilePicBase64 || profile.profilePic}
-                                alt="Preview"
-                                style={{
-                                  width: "100%",
-                                  height: "100%",
-                                  objectFit: "cover",
-                                  objectPosition: "center",
-                                  borderRadius: "50%",
-                                }}
+                                src={newProfilePic.previewUrl}
+                                alt="Profile Preview"
+                                style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
+                                onError={() => setIsImage(false)}
+                              />
+                            ) : profilePicUrl && isImage ? (
+                              <img
+                                src={profilePicUrl}
+                                alt="Current Profile"
+                                style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
+                                onError={() => setIsImage(false)}
                               />
                             ) : (
-                              <div
-                                className="d-flex align-items-center justify-content-center"
-                                style={{
-                                  height: "100%",
-                                  color: "#6c757d",
-                                  fontSize: "14px",
-                                }}
-                              >
-                                Upload Image
+                              <div className="d-flex align-items-center justify-content-center" style={{ height: "100%", color: "#6c757d", fontSize: "14px" }}>
+                                Upload New
                               </div>
                             )}
                           </label>
-                          <input
-                            type="file"
-                            id="editProfilePic"
-                            accept="image/*"
-                            style={{ display: "none" }}
-                            onChange={handleImageChange}
-                          />
+                          <input type="file" id="editProfilePic" accept="image/*" style={{ display: "none" }} onChange={handleImageChange} />
                         </>
-                      ) : profile.profilePic ? (
+                      ) : profilePicUrl && isImage ? (
                         <img
-                          src={profile.profilePic}
+                          src={profilePicUrl}
                           alt="Profile"
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                            objectPosition: "center",
-                            borderRadius: "50%",
-                          }}
+                          style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
+                          onError={() => setIsImage(false)}
                         />
                       ) : (
-                        <div
-                          className="d-flex align-items-center justify-content-center"
-                          style={{
-                            height: "100%",
-                            color: "#6c757d",
-                            fontSize: "14px",
-                          }}
-                        >
+                        <div className="d-flex align-items-center justify-content-center" style={{ height: "100%", color: "#6c757d", fontSize: "14px" }}>
                           No Image
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
-
                 <div className="col-md-9">
-                  {/* Personal Info */}
                   <div className="border rounded p-3 mb-4">
                     <h5 className="mb-3">Personal Information</h5>
                     <div className="row">
@@ -221,6 +292,7 @@ const handleCloseSnackbar = () =>
                           type="text"
                           className="form-control"
                           value={profile.employeeId}
+                          readOnly
                         />
                       </div>
                       <div className="col-md-4 mb-3">
@@ -229,7 +301,7 @@ const handleCloseSnackbar = () =>
                           type="text"
                           className="form-control"
                           name="firstName"
-                          value={profile.firstName}
+                          value={profile.firstName || ""}
                           onChange={handleChange}
                           disabled={!isEditing}
                         />
@@ -240,7 +312,7 @@ const handleCloseSnackbar = () =>
                           type="text"
                           className="form-control"
                           name="lastName"
-                          value={profile.lastName}
+                          value={profile.lastName || ""}
                           onChange={handleChange}
                           disabled={!isEditing}
                         />
@@ -261,7 +333,7 @@ const handleCloseSnackbar = () =>
                         <select
                           className="form-control"
                           name="gender"
-                          value={profile.gender}
+                          value={profile.gender || ""}
                           onChange={handleChange}
                           disabled={!isEditing}
                         >
@@ -277,7 +349,7 @@ const handleCloseSnackbar = () =>
                           type="text"
                           className="form-control"
                           name="bloodGroup"
-                          value={profile.bloodGroup}
+                          value={profile.bloodGroup || ""}
                           onChange={handleChange}
                           disabled={!isEditing}
                         />
@@ -296,7 +368,6 @@ const handleCloseSnackbar = () =>
                     </div>
                   </div>
 
-                  {/* Contact Info */}
                   <div className="border rounded p-3 mb-4">
                     <h5 className="mb-3">Contact Information</h5>
                     <div className="row">
@@ -306,7 +377,7 @@ const handleCloseSnackbar = () =>
                           type="text"
                           className="form-control"
                           name="phoneNumber"
-                          value={profile.phoneNumber}
+                          value={profile.phoneNumber || ""}
                           onChange={handleChange}
                           disabled={!isEditing}
                         />
@@ -317,7 +388,7 @@ const handleCloseSnackbar = () =>
                           type="text"
                           className="form-control"
                           name="emergencyNumber"
-                          value={profile.emergencyNumber}
+                          value={profile.emergencyNumber || ""}
                           onChange={handleChange}
                           disabled={!isEditing}
                         />
@@ -328,7 +399,7 @@ const handleCloseSnackbar = () =>
                           type="email"
                           className="form-control"
                           name="officialEmail"
-                          value={profile.officialEmail}
+                          value={profile.officialEmail || ""}
                           onChange={handleChange}
                           disabled={!isEditing}
                         />
@@ -339,7 +410,7 @@ const handleCloseSnackbar = () =>
                           type="email"
                           className="form-control"
                           name="personalEmail"
-                          value={profile.personalEmail}
+                          value={profile.personalEmail || ""}
                           onChange={handleChange}
                           disabled={!isEditing}
                         />
@@ -350,7 +421,7 @@ const handleCloseSnackbar = () =>
                           className="form-control"
                           name="address"
                           rows="4"
-                          value={profile.address}
+                          value={profile.address || ""}
                           onChange={handleChange}
                           disabled={!isEditing}
                         ></textarea>
@@ -358,7 +429,6 @@ const handleCloseSnackbar = () =>
                     </div>
                   </div>
 
-                  {/* Employee Info */}
                   <div className="border rounded p-3 mb-4">
                     <h5 className="mb-3">Employee Details</h5>
                     <div className="row">
@@ -367,7 +437,7 @@ const handleCloseSnackbar = () =>
                         <select
                           className="form-control"
                           name="role"
-                          value={profile.role}
+                          value={profile.role || ""}
                           onChange={handleChange}
                           disabled={!isEditing}
                         >
@@ -382,29 +452,17 @@ const handleCloseSnackbar = () =>
                         <select
                           className="form-control"
                           name="department"
-                          value={profile.department}
+                          value={profile.department || ""}
                           onChange={handleChange}
                           disabled={!isEditing}
                         >
                           <option value="">Select</option>
-                          <option value="REGISTRATION TEAM">
-                            Registration Team
-                          </option>
-                          <option value="KEY ACC MANAGEMENT">
-                            Key Account Management
-                          </option>
-                          <option value="GROWTH MANAGEMENT">
-                            Growth Management
-                          </option>
-                          <option value="DIGITAL MARKETING">
-                            Digital Marketing
-                          </option>
-                          <option value="WEB DEVELOPMENT">
-                            Web Development
-                          </option>
-                          <option value="TELE CALLING TEAM">
-                            Tele Calling Team
-                          </option>
+                          <option value="REGISTRATION TEAM">Registration Team</option>
+                          <option value="KEY ACC MANAGEMENT">Key Account Management</option>
+                          <option value="GROWTH MANAGEMENT">Growth Management</option>
+                          <option value="DIGITAL MARKETING">Digital Marketing</option>
+                          <option value="WEB DEVELOPMENT">Web Development</option>
+                          <option value="TELE CALLING TEAM">Tele Calling Team</option>
                           <option value="MANAGEMENT">Management</option>
                         </select>
                       </div>
@@ -414,7 +472,7 @@ const handleCloseSnackbar = () =>
                           type="text"
                           className="form-control"
                           name="designation"
-                          value={profile.designation}
+                          value={profile.designation || ""}
                           onChange={handleChange}
                           disabled={!isEditing}
                         />
@@ -425,7 +483,7 @@ const handleCloseSnackbar = () =>
                           type="text"
                           className="form-control"
                           name="salary"
-                          value={profile.salary}
+                          value={profile.salary || ""}
                           onChange={handleChange}
                           disabled={!isEditing}
                         />
@@ -433,7 +491,6 @@ const handleCloseSnackbar = () =>
                     </div>
                   </div>
 
-                  {/* Bank Details */}
                   <div className="border rounded p-3 mb-4">
                     <h5 className="mb-3">Bank Details</h5>
                     <div className="row">
@@ -443,7 +500,7 @@ const handleCloseSnackbar = () =>
                           type="text"
                           className="form-control"
                           name="bankName"
-                          value={profile.bankName}
+                          value={profile.bankName || ""}
                           onChange={handleChange}
                           disabled={!isEditing}
                         />
@@ -454,7 +511,7 @@ const handleCloseSnackbar = () =>
                           type="text"
                           className="form-control"
                           name="accountNumber"
-                          value={profile.accountNumber}
+                          value={profile.accountNumber || ""}
                           onChange={handleChange}
                           disabled={!isEditing}
                         />
@@ -465,24 +522,25 @@ const handleCloseSnackbar = () =>
                           type="text"
                           className="form-control"
                           name="ifscCode"
-                          value={profile.ifscCode}
+                          value={profile.ifscCode || ""}
                           onChange={handleChange}
                           disabled={!isEditing}
                         />
                       </div>
                     </div>
                   </div>
-                  {/* Edit Button at Bottom */}
-  {!isEditing && (
-    <div className="text-end mt-4">
-      <button
-        className="btn btn-outline-primary px-4 py-2 fw-bold"
-        onClick={handleEdit}
-      >
-        Edit
-      </button>
-    </div>
-  )}
+
+                  {!isEditing && (
+                    <div className="text-end mt-4">
+                      <button
+                        type="button"
+                        className="btn btn-outline-primary px-4 py-2 fw-bold"
+                        onClick={handleEdit}
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  )}
 
                   {isEditing && (
                     <div className="text-end">
@@ -492,6 +550,13 @@ const handleCloseSnackbar = () =>
                         onClick={handleSave}
                       >
                         Save
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-secondary me-2"
+                        onClick={handleCancel}
+                      >
+                        Cancel
                       </button>
                       <button
                         type="button"
@@ -509,12 +574,11 @@ const handleCloseSnackbar = () =>
         )}
       </div>
       <Snackbar
-  message={snackbar.message}
-  show={snackbar.show}
-  onClose={handleCloseSnackbar}
-  type={snackbar.type}
-/>
-
+        message={snackbar.message}
+        show={snackbar.show}
+        onClose={handleCloseSnackbar}
+        type={snackbar.type}
+      />
     </div>
   );
 };

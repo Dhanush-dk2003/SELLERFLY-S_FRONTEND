@@ -27,24 +27,23 @@ const CreateProfileForm = () => {
     profilePic: null,
   });
   const [snackbar, setSnackbar] = useState({
-  show: false,
-  message: "",
-  type: "success", // can be "success", "error", or "warning"
-});
+    show: false,
+    message: "",
+    type: "success", // can be "success", "error", or "warning"
+  });
 
-const handleCloseSnackbar = () =>
-  setSnackbar((prev) => ({ ...prev, show: false }));
-  useEffect(() => {
   const fetchNextId = async () => {
     const res = await fetch('https://sellerfly-backend-production.up.railway.app/api/users/next-id');
-  //  const res = await fetch('http://localhost:5000/api/users/next-id');
-
+    // const res = await fetch("http://localhost:5000/api/users/next-id");
     const data = await res.json();
     setFormData((prev) => ({ ...prev, employeeId: data.nextId }));
   };
 
-  fetchNextId();
-}, []);
+  const handleCloseSnackbar = () =>
+    setSnackbar((prev) => ({ ...prev, show: false }));
+  useEffect(() => {
+    fetchNextId();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -52,78 +51,102 @@ const handleCloseSnackbar = () =>
   };
 
   const handleImageChange = (e) => {
-  const file = e.target.files[0];
-  const reader = new FileReader();
-
-  reader.onloadend = () => {
-    setFormData((prev) => ({
-      ...prev,
-      profilePic: reader.result, // base64 string
-    }));
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({ ...prev, profilePic: file }));
+    }
   };
 
-  if (file) {
-    reader.readAsDataURL(file); // Convert to base64
-  }
-};
-
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  // Required fields validation
-  const requiredFields = [
-    "employeeId",
-    "firstName",
-    "lastName",
-    "dob",
-    "gender",
-    "joiningDate",
-    "phoneNumber",
-    "emergencyNumber",
-    "officialEmail",
-  ];
-  const missingFields = requiredFields.filter((field) => !formData[field]);
+    // Required fields validation
+    const requiredFields = [
+      "employeeId",
+      "firstName",
+      "lastName",
+      "dob",
+      "gender",
+      "joiningDate",
+      "phoneNumber",
+      "emergencyNumber",
+      "officialEmail",
+    ];
+    const missingFields = requiredFields.filter((field) => !formData[field]);
 
-  if (missingFields.length > 0) {
-    setSnackbar({
-      show: true,
-      message: `Please fill in all required fields: ${missingFields.join(", ")}`,
-      type: "error",
-    });
-    return;
-  }
-
-  try {
-    // const response = await fetch("http://localhost:5000/api/users/create", {
-    const response = await fetch("https://sellerfly-backend-production.up.railway.app/api/users/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
-
-    const result = await response.json();
-    if (response.ok) {
+    if (missingFields.length > 0) {
       setSnackbar({
         show: true,
-        message: "Profile created successfully!",
-        type: "success",
+        message: `Please fill in all required fields: ${missingFields.join(
+          ", "
+        )}`,
+        type: "error",
       });
-    } else {
+      return;
+    }
+
+    try {
+      const formDataToSend = new FormData();
+      Object.keys(formData).forEach((key) => {
+        if (key !== "profilePic" && formData[key]) {
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+      if (formData.profilePic) {
+        formDataToSend.append("profilePic", formData.profilePic);
+      }
+
+      // const response = await fetch("http://localhost:5000/api/users/create", {
+      const response = await fetch("https://sellerfly-backend-production.up.railway.app/api/users/create", {
+        method: "POST",
+        body: formDataToSend,
+      });
+
+      const result = await response.json();
+      if (response.ok) {
+        setSnackbar({
+          show: true,
+          message: "Profile created successfully!",
+          type: "success",
+        });
+        setFormData({
+          employeeId: "",
+          firstName: "",
+          lastName: "",
+          dob: "",
+          gender: "",
+          bloodGroup: "",
+          joiningDate: "",
+          phoneNumber: "",
+          emergencyNumber: "",
+          officialEmail: "",
+          personalEmail: "",
+          address: "",
+          role: "",
+          department: "",
+          designation: "",
+          salary: "",
+          bankName: "",
+          accountNumber: "",
+          ifscCode: "",
+          profilePic: null,
+        });
+        fetchNextId();
+      } else {
+        setSnackbar({
+          show: true,
+          message: result.message || "Error occurred",
+          type: "error",
+        });
+      }
+    } catch (err) {
       setSnackbar({
         show: true,
-        message: result.message || "Error occurred",
+        message: "Failed to submit: " + err.message,
         type: "error",
       });
     }
-  } catch (err) {
-    setSnackbar({
-      show: true,
-      message: "Failed to submit: " + err.message,
-      type: "error",
-    });
-  }
-};
-
+  };
 
   return (
     <div className="container py-4">
@@ -148,13 +171,14 @@ const handleCloseSnackbar = () =>
                   >
                     {formData.profilePic ? (
                       <img
-                        src={formData.profilePic}
+                        src={URL.createObjectURL(formData.profilePic)}
                         alt="Profile"
                         style={{
                           width: "100%",
                           height: "100%",
                           objectFit: "cover",
                         }}
+                        onLoad={(e) => URL.revokeObjectURL(e.target.src)} // ✅ prevent memory leak
                       />
                     ) : (
                       <span style={{ color: "#6c757d", fontSize: "14px" }}>
@@ -196,6 +220,7 @@ const handleCloseSnackbar = () =>
                       className="form-control"
                       name="firstName"
                       onChange={handleChange}
+                      value={formData.firstName || ""}
                     />
                   </div>
                   <div className="col-md-4 mb-3">
@@ -205,6 +230,7 @@ const handleCloseSnackbar = () =>
                       className="form-control"
                       name="lastName"
                       onChange={handleChange}
+                      value={formData.lastName || ""}
                     />
                   </div>
                   <div className="col-md-4 mb-3">
@@ -214,6 +240,7 @@ const handleCloseSnackbar = () =>
                       className="form-control"
                       name="dob"
                       onChange={handleChange}
+                      value={formData.dob || ""}
                     />
                   </div>
                   <div className="col-md-4 mb-3">
@@ -222,6 +249,7 @@ const handleCloseSnackbar = () =>
                       className="form-control"
                       name="gender"
                       onChange={handleChange}
+                      value={formData.gender || ""}
                     >
                       <option value="">Select</option>
                       <option value="Male">Male</option>
@@ -236,6 +264,7 @@ const handleCloseSnackbar = () =>
                       className="form-control"
                       name="bloodGroup"
                       onChange={handleChange}
+                      value={formData.bloodGroup || ""}
                     />
                   </div>
                   <div className="col-md-4 mb-3">
@@ -245,6 +274,7 @@ const handleCloseSnackbar = () =>
                       className="form-control"
                       name="joiningDate"
                       onChange={handleChange}
+                      value={formData.joiningDate || ""}
                     />
                   </div>
                 </div>
@@ -261,6 +291,7 @@ const handleCloseSnackbar = () =>
                       className="form-control"
                       name="phoneNumber"
                       onChange={handleChange}
+                      value={formData.phoneNumber || ""}
                     />
                   </div>
                   <div className="col-md-6 mb-3">
@@ -270,6 +301,7 @@ const handleCloseSnackbar = () =>
                       className="form-control"
                       name="emergencyNumber"
                       onChange={handleChange}
+                      value={formData.emergencyNumber || ""}
                     />
                   </div>
                   <div className="col-md-6 mb-3">
@@ -279,6 +311,7 @@ const handleCloseSnackbar = () =>
                       className="form-control"
                       name="officialEmail"
                       onChange={handleChange}
+                      value={formData.officialEmail || ""}
                     />
                   </div>
                   <div className="col-md-6 mb-3">
@@ -288,6 +321,7 @@ const handleCloseSnackbar = () =>
                       className="form-control"
                       name="personalEmail"
                       onChange={handleChange}
+                      value={formData.personalEmail || ""}
                     />
                   </div>
                   <div className="col-md-12 mb-3">
@@ -297,6 +331,7 @@ const handleCloseSnackbar = () =>
                       name="address"
                       rows="4"
                       onChange={handleChange}
+                      value={formData.address || ""}
                     ></textarea>
                   </div>
                 </div>
@@ -312,6 +347,7 @@ const handleCloseSnackbar = () =>
                       className="form-control"
                       name="role"
                       onChange={handleChange}
+                      value={formData.role || ""}
                     >
                       <option value="">Select</option>
                       <option value="ADMIN">Admin</option>
@@ -325,17 +361,26 @@ const handleCloseSnackbar = () =>
                       className="form-control"
                       name="department"
                       onChange={handleChange}
+                      value={formData.department || ""}
                     >
                       <option value="">Select</option>
-                      <option value="REGISTRATION TEAM">Registration Team</option>
-                      <option value="KEY ACC MANAGEMENT">Key Account Management</option>
-                      <option value="GROWTH MANAGEMENT">Growth Management</option>
-                      <option value="DIGITAL MARKETING">Digital Marketing</option>
+                      <option value="REGISTRATION TEAM">
+                        Registration Team
+                      </option>
+                      <option value="KEY ACC MANAGEMENT">
+                        Key Account Management
+                      </option>
+                      <option value="GROWTH MANAGEMENT">
+                        Growth Management
+                      </option>
+                      <option value="DIGITAL MARKETING">
+                        Digital Marketing
+                      </option>
                       <option value="WEB DEVELOPMENT">Web Development</option>
-                      <option value="TELE CALLING TEAM">Tele Calling Team</option>
+                      <option value="TELE CALLING TEAM">
+                        Tele Calling Team
+                      </option>
                       <option value="MANAGEMENT">Management</option>
-
-                      
                     </select>
                   </div>
                   <div className="col-md-4 mb-3">
@@ -345,6 +390,7 @@ const handleCloseSnackbar = () =>
                       className="form-control"
                       name="designation"
                       onChange={handleChange}
+                      value={formData.designation || ""}
                     />
                   </div>
                   <div className="col-md-4 mb-3">
@@ -354,6 +400,7 @@ const handleCloseSnackbar = () =>
                       className="form-control"
                       name="salary"
                       onChange={handleChange}
+                      value={formData.salary || ""}
                     />
                   </div>
                 </div>
@@ -370,6 +417,7 @@ const handleCloseSnackbar = () =>
                       className="form-control"
                       name="bankName"
                       onChange={handleChange}
+                      value={formData.bankName || ""}
                     />
                   </div>
                   <div className="col-md-4 mb-3">
@@ -379,6 +427,7 @@ const handleCloseSnackbar = () =>
                       className="form-control"
                       name="accountNumber"
                       onChange={handleChange}
+                      value={formData.accountNumber || ""}
                     />
                   </div>
                   <div className="col-md-4 mb-3">
@@ -388,6 +437,7 @@ const handleCloseSnackbar = () =>
                       className="form-control"
                       name="ifscCode"
                       onChange={handleChange}
+                      value={formData.ifscCode || ""}
                     />
                   </div>
                 </div>
@@ -403,12 +453,11 @@ const handleCloseSnackbar = () =>
         </form>
       </div>
       <Snackbar
-  message={snackbar.message}
-  show={snackbar.show}
-  onClose={handleCloseSnackbar}
-  type={snackbar.type}
-/>
-
+        message={snackbar.message}
+        show={snackbar.show}
+        onClose={handleCloseSnackbar}
+        type={snackbar.type}
+      />
     </div>
   );
 };
