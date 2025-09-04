@@ -21,7 +21,9 @@ const ViewProfile = ({ initialProfile, onClose }) => {
   const fetchProfilePicture = async (employeeId) => {
     if (!employeeId) return null;
     try {
-      const response = await API.get(`/users/profile-pic/${employeeId}`, {
+      // Add cache-busting parameter to ensure fresh image
+      const timestamp = new Date().getTime();
+       const response = await API.get(`/users/profile-pic/${employeeId}?t=${timestamp}`, {
         responseType: "blob",
         timeout: 10000,
       });
