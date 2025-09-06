@@ -159,18 +159,7 @@ const SidebarContent = ({
                   Projects
                 </button>
               </li>
-              <li className="nav-item mb-3">
-                <button
-                  className={`nav-link w-100 rounded ${
-                    activeItem === "tasks"
-                      ? "bg-dark text-white fw-bold"
-                      : "bg-light text-dark"
-                  }`}
-                  onClick={() => handleItemClick("tasks", "/tasks")}
-                >
-                  Tasks
-                </button>
-              </li>
+              
 
               {user?.role === "MANAGER" && (
                 <li className="nav-item mb-3">
@@ -217,6 +206,18 @@ const SidebarContent = ({
               )}
             </>
           )}
+          <li className="nav-item mb-3">
+                <button
+                  className={`nav-link w-100 rounded ${
+                    activeItem === "tasks"
+                      ? "bg-dark text-white fw-bold"
+                      : "bg-light text-dark"
+                  }`}
+                  onClick={() => handleItemClick("tasks", "/tasks")}
+                >
+                  Tasks
+                </button>
+              </li>
 
           {/* REGISTRATION TEAM */}
           {(user?.department === "REGISTRATION TEAM" || user?.department === "MANAGEMENT") && (
