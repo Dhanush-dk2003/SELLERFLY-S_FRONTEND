@@ -9,8 +9,8 @@ const Logout = () => {
   useEffect(() => {
   const logoutSequence = async () => {
     try {
-      await fetch('http://localhost:5000/api/auth/logout', {
-      // await fetch('https://sellerfly-backend-production.up.railway.app/api/auth/logout', {
+      // await fetch('http://localhost:5000/api/auth/logout', {
+      await fetch('https://sellerfly-backend-production.up.railway.app/api/auth/logout', {
         method: 'POST',
         credentials: 'include',
       });

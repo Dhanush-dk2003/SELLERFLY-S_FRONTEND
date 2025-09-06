@@ -49,10 +49,8 @@ const CreatePortal = () => {
       return;
     }
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/clients/search/${query}`
-      );
-      // const res = await fetch(`https://sellerfly-backend-production.up.railway.app/api/clients/search/${query}`);
+      // const res = await fetch(`http://localhost:5000/api/clients/search/${query}`);
+      const res = await fetch(`https://sellerfly-backend-production.up.railway.app/api/clients/search/${query}`);
       const data = await res.json();
       if (Array.isArray(data)) {
         setClientSuggestions(data);
@@ -126,8 +124,8 @@ const CreatePortal = () => {
     };
 
     try {
-      const res = await fetch("http://localhost:5000/api/portals", {
-        // const res = await fetch("https://sellerfly-backend-production.up.railway.app/api/portals", {
+      // const res = await fetch("http://localhost:5000/api/portals", {
+        const res = await fetch("https://sellerfly-backend-production.up.railway.app/api/portals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
