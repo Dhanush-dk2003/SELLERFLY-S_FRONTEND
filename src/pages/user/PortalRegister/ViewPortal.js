@@ -4,16 +4,26 @@ import Snackbar from "../../../components/Snackbar";
 
 const STATUS_OPTIONS = ["TODO", "IN_PROGRESS", "DONE"];
 const COMMON_PORTALS = [
-  "Amazon", "Flipkart", "Meesho", "JioMart", "Ajio",
-  "Amazon Bazaar", "Shopify", "Snapdeal", "Custom"
+  "Amazon",
+  "Flipkart",
+  "Meesho",
+  "JioMart",
+  "Ajio",
+  "Amazon Bazaar",
+  "Shopify",
+  "Snapdeal",
+  "Custom",
 ];
 
 const ViewPortal = ({ client, onClose }) => {
   const [portals, setPortals] = useState([]);
-  const [snackbar, setSnackbar] = useState({ show: false, message: "", type: "" });
+  const [snackbar, setSnackbar] = useState({
+    show: false,
+    message: "",
+    type: "",
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [deletedPortals, setDeletedPortals] = useState([]);
-
 
   useEffect(() => {
     const initial = (client.portals || []).map((p) => {
@@ -22,6 +32,7 @@ const ViewPortal = ({ client, onClose }) => {
         ...p,
         portalName: isCommon ? p.portalName : "Custom",
         customPortal: isCommon ? "" : p.portalName,
+        registeredBy: p.registeredBy || "US",
       };
     });
     setPortals(initial);
@@ -57,53 +68,58 @@ const ViewPortal = ({ client, onClose }) => {
     ]);
   };
 
-const removePortalRow = (index) => {
-  if (!isEditing) return;
-  setPortals((p) => {
-    const removed = p[index];
-    if (removed.id && window.confirm("Are you sure you want to remove portal?")) {
-      setDeletedPortals((prev) => [...prev, removed.id]);
-    }
-    return p.filter((_, i) => i !== index);
-  });
-};
-
+  const removePortalRow = (index) => {
+    if (!isEditing) return;
+    setPortals((p) => {
+      const removed = p[index];
+      if (
+        removed.id &&
+        window.confirm("Are you sure you want to remove portal?")
+      ) {
+        setDeletedPortals((prev) => [...prev, removed.id]);
+      }
+      return p.filter((_, i) => i !== index);
+    });
+  };
 
   const handleSave = async () => {
-  try {
-    for (const p of portals) {
-      const payload = {
-  portalName: p.portalName === "Custom" ? p.customPortal : p.portalName,
-  username: p.username,
-  password: p.password,
-  status: p.status || "TODO",
-  remarks: p.remarks || null,
-  startDate: p.startDate || null,
-  endDate: p.endDate || null,
-  portalHealth: p.portalHealth || null,
-  portalLink: p.portalLink || null,
-  masterLink: p.masterLink || null,
-};
+    try {
+      for (const p of portals) {
+        const payload = {
+          portalName: p.portalName === "Custom" ? p.customPortal : p.portalName,
+          username: p.username,
+          password: p.password,
+          status: p.status || "TODO",
+          remarks: p.remarks || null,
+          startDate: p.startDate || null,
+          endDate: p.endDate || null,
+          portalHealth: p.portalHealth || null,
+          portalLink: p.portalLink || null,
+          masterLink: p.masterLink || null,
+          registeredBy: p.registeredBy || "US",
+        };
 
-
-      if (p.id) {
-        await API.put(`/portals/${p.id}`, payload);
-      } else {
-        await API.post("/portals", {
-          clientId: client.id,
-          portals: [payload],
-        });
+        if (p.id) {
+          await API.put(`/portals/${p.id}`, payload);
+        } else {
+          await API.post("/portals", {
+            clientId: client.id,
+            portals: [payload],
+          });
+        }
       }
-    }
 
-    // 🆕 delete removed ones
-    for (const id of deletedPortals) {
-      await API.delete(`/portals/${id}`);
-    }
-    setDeletedPortals([]);
+      // 🆕 delete removed ones
+      for (const id of deletedPortals) {
+        await API.delete(`/portals/${id}`);
+      }
+      setDeletedPortals([]);
 
-
-      setSnackbar({ show: true, message: "Portals saved successfully", type: "success" });
+      setSnackbar({
+        show: true,
+        message: "Portals saved successfully",
+        type: "success",
+      });
       setIsEditing(false);
 
       const res = await API.get(`/portals/client/${client.id}`);
@@ -137,14 +153,24 @@ const removePortalRow = (index) => {
         </button>
 
         {portals.map((portal, index) => {
-          const effectiveName = portal.portalName === "Custom" ? (portal.customPortal || "") : portal.portalName;
+          const effectiveName =
+            portal.portalName === "Custom"
+              ? portal.customPortal || ""
+              : portal.portalName;
           return (
-            <div key={portal.id || index} className="border rounded p-3 mb-3 bg-light">
+            <div
+              key={portal.id || index}
+              className="border rounded p-3 mb-3 bg-light"
+            >
               <div className="row">
                 <div className="col-md-6 mb-3">
                   <label>Portal Name</label>
                   {!isEditing ? (
-                    <input className="form-control" value={effectiveName} disabled />
+                    <input
+                      className="form-control"
+                      value={effectiveName}
+                      disabled
+                    />
                   ) : (
                     <>
                       <select
@@ -174,21 +200,19 @@ const removePortalRow = (index) => {
                     </>
                   )}
                 </div>
-                <div className="col-md-4 mb-3">
-  <label>Portal Health</label>
-  <select
-    name="portalHealth"
-    value={portal.portalHealth}
-    onChange={(e) => handleChange(index, e)}
-    className="form-control"
-    disabled={!isEditing}
-  >
-    <option value="">Select</option>
-    <option value="GOOD">Good</option>
-    <option value="BAD">Bad</option>
-    <option value="NEEDS_IMPROVEMENT">Needs Improvement</option>
-  </select>
-</div>
+                <div className="col-md-6 mb-3">
+                  <label>Portal Registration</label>
+                  <select
+                    name="registeredBy"
+                    value={portal.registeredBy}
+                    onChange={(e) => handleChange(index, e)}
+                    className="form-control"
+                    disabled={!isEditing}
+                  >
+                    <option value="US">Registered by Us</option>
+                    <option value="CLIENT">Registered by Client</option>
+                  </select>
+                </div>
 
                 <div className="col-md-6 mb-3">
                   <label>Username</label>
@@ -213,36 +237,46 @@ const removePortalRow = (index) => {
                     disabled={!isEditing}
                   />
                 </div>
-                <div className="col-md-4 mb-3">
-  <label>Start Date</label>
-  <input
-    type="date"
-    name="startDate"
-    value={portal.startDate ? portal.startDate.split("T")[0] : ""}
-    onChange={(e) => handleChange(index, e)}
-    className="form-control"
-    disabled={!isEditing}
-  />
-</div>
+                <div className="col-md-6 mb-3">
+                  <label>Start Date</label>
+                  <input
+                    type="date"
+                    name="startDate"
+                    value={
+                      portal.startDate ? portal.startDate.split("T")[0] : ""
+                    }
+                    onChange={(e) => handleChange(index, e)}
+                    className="form-control"
+                    disabled={!isEditing}
+                  />
+                </div>
 
-<div className="col-md-4 mb-3">
-  <label>End Date</label>
-  <input
-    type="date"
-    name="endDate"
-    value={portal.endDate ? portal.endDate.split("T")[0] : ""}
-    onChange={(e) => handleChange(index, e)}
-    className="form-control"
-    disabled={!isEditing}
-  />
-</div>
-
-
-
-
-
-
-
+                <div className="col-md-6 mb-3">
+                  <label>End Date</label>
+                  <input
+                    type="date"
+                    name="endDate"
+                    value={portal.endDate ? portal.endDate.split("T")[0] : ""}
+                    onChange={(e) => handleChange(index, e)}
+                    className="form-control"
+                    disabled={!isEditing}
+                  />
+                </div>
+                <div className="col-md-6 mb-3">
+                  <label>Portal Health</label>
+                  <select
+                    name="portalHealth"
+                    value={portal.portalHealth}
+                    onChange={(e) => handleChange(index, e)}
+                    className="form-control"
+                    disabled={!isEditing}
+                  >
+                    <option value="">Select</option>
+                    <option value="GOOD">Good</option>
+                    <option value="BAD">Bad</option>
+                    <option value="NEEDS_IMPROVEMENT">Needs Improvement</option>
+                  </select>
+                </div>
 
                 <div className="col-md-6 mb-3">
                   <label>Status</label>
@@ -301,17 +335,22 @@ const removePortalRow = (index) => {
               </button>
             </>
           ) : (
-            <>
-              <button className="btn btn-success me-2" onClick={handleSave}>
-                Save
-              </button>
-              <button className="btn btn-danger me-2" onClick={onClose}>
-                Close
-              </button>
-              <button className="btn btn-outline-primary" onClick={addPortalRow}>
+            <div className="d-flex justify-content-between">
+              <button
+                className="btn btn-outline-primary gap-3"
+                onClick={addPortalRow}
+              >
                 + Add Portal
               </button>
-            </>
+              <div>
+                <button className="btn btn-success me-2" onClick={handleSave}>
+                  Save
+                </button>
+                <button className="btn btn-secondary" onClick={onClose}>
+                  Close
+                </button>
+              </div>
+            </div>
           )}
         </div>
       </div>

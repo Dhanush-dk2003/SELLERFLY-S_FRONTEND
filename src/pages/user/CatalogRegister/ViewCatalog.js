@@ -43,6 +43,8 @@ const ViewCatalog = ({ client, onClose }) => {
           startDate: p.startDate || null,
           endDate: p.endDate || null,
           portalHealth: p.portalHealth || null,
+          registeredBy: p.registeredBy || "US",
+          
         };
 
         if (p.id) {
@@ -104,22 +106,17 @@ const ViewCatalog = ({ client, onClose }) => {
                   disabled
                 />
               </div>
-              {/* Editable Portal Health */}
-              <div className="col-md-4 mb-3">
-                <label>Portal Health</label>
-                <select
-                  name="portalHealth"
-                  value={portal.portalHealth || ""}
-                  onChange={(e) => handleChange(index, e)}
+              <div className="col-md-6 mb-3">
+                <label>Portal Registration</label>
+                <input
                   className="form-control"
-                  disabled={!isEditing}
-                >
-                  <option value="">Select</option>
-                  <option value="GOOD">Good</option>
-                  <option value="BAD">Bad</option>
-                  <option value="NEEDS_IMPROVEMENT">Needs Improvement</option>
-                </select>
+                  value={portal.registeredBy}
+                  disabled
+                />
               </div>
+
+              {/* Editable Portal Health */}
+              
 
               {/* Read-only Username */}
               <div className="col-md-6 mb-3">
@@ -142,7 +139,7 @@ const ViewCatalog = ({ client, onClose }) => {
               </div>
 
               {/* Editable Start Date */}
-              <div className="col-md-4 mb-3">
+              <div className="col-md-6 mb-3">
                 <label>Start Date</label>
                 <input
                   type="date"
@@ -155,7 +152,7 @@ const ViewCatalog = ({ client, onClose }) => {
               </div>
 
               {/* Editable End Date */}
-              <div className="col-md-4 mb-3">
+              <div className="col-md-6 mb-3">
                 <label>End Date</label>
                 <input
                   type="date"
@@ -168,6 +165,21 @@ const ViewCatalog = ({ client, onClose }) => {
               </div>
 
               {/* Editable Status */}
+              <div className="col-md-6 mb-3">
+                <label>Portal Health</label>
+                <select
+                  name="portalHealth"
+                  value={portal.portalHealth || ""}
+                  onChange={(e) => handleChange(index, e)}
+                  className="form-control"
+                  disabled={!isEditing}
+                >
+                  <option value="">Select</option>
+                  <option value="GOOD">Good</option>
+                  <option value="BAD">Bad</option>
+                  <option value="NEEDS_IMPROVEMENT">Needs Improvement</option>
+                </select>
+              </div>
               <div className="col-md-6 mb-3">
                 <label>Status</label>
                 <select
@@ -185,19 +197,6 @@ const ViewCatalog = ({ client, onClose }) => {
                   ))}
                 </select>
               </div>
-
-              {/* Editable Remarks */}
-              <div className="col-md-12 mb-3">
-                <label>Remarks</label>
-                <textarea
-                  name="remarks"
-                  value={portal.remarks || ""}
-                  onChange={(e) => handleChange(index, e)}
-                  className="form-control"
-                  disabled={!isEditing}
-                />
-              </div>
-
               {/* Editable Portal Link */}
               <div className="col-md-6 mb-3">
                 <label>Portal Link</label>
@@ -223,6 +222,20 @@ const ViewCatalog = ({ client, onClose }) => {
                   disabled={!isEditing}
                 />
               </div>
+
+              {/* Editable Remarks */}
+              <div className="col-md-12 mb-3">
+                <label>Remarks</label>
+                <textarea
+                  name="remarks"
+                  value={portal.remarks || ""}
+                  onChange={(e) => handleChange(index, e)}
+                  className="form-control"
+                  disabled={!isEditing}
+                />
+              </div>
+
+              
             </div>
           </div>
         ))}

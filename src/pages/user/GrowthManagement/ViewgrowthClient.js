@@ -24,20 +24,34 @@ const ViewgrowthClient = ({ initialClient, onClose }) => {
 
   const handleEdit = () => setIsEditing(true);
 
+  // Helper function to format date for input field
+  const formatDateForInput = (dateString) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
+    return date.toISOString().split('T')[0];
+  };
+
   const handleSave = async () => {
     try {
       const updateData = {
-        ...client,
-        budget: client.budget ? parseFloat(client.budget) : null,
-        productCount: client.productCount ? parseInt(client.productCount) : 0,
-        isActive: !!client.isActive,
-      };
+  ...client,
+  budget: client.budget ? parseFloat(client.budget) : null,
+  productCount: client.productCount ? parseInt(client.productCount) : 0,
+  // Change this line:
+  isActive: !!client.isActive,  // Keep this as isActive
+  lastPaymentDate: client.lastPaymentDate
+    ? new Date(client.lastPaymentDate).toISOString()
+    : null,
+};
 
-      await API.put(`/clients/${client.id}`, updateData, {
+      await API.put(`/growth/client/${client.id}`, updateData, {
         headers: { "Content-Type": "application/json" },
       });
 
-      const refreshed = await API.get(`/clients/${client.id}`);
+      const refreshed = await API.get(`/growth/client/${client.id}`);
+      
+      // Update client state with properly formatted data
       setClient(refreshed.data);
 
       setSnackbar({
@@ -141,7 +155,20 @@ const ViewgrowthClient = ({ initialClient, onClose }) => {
                 <input
                   type="number"
                   name="productCount"
-                  value={client.productCount}
+                  value={client.productCount || 0}
+                  onChange={handleChange}
+                  className="form-control"
+                  disabled={!isEditing}
+                />
+              </div>
+              
+              {/* Last Payment Date */}
+              <div className="col-md-4 mb-3">
+                <label>Last Payment Date</label>
+                <input
+                  type="date"
+                  name="lastPaymentDate"
+                  value={formatDateForInput(client.lastPaymentDate)}
                   onChange={handleChange}
                   className="form-control"
                   disabled={!isEditing}

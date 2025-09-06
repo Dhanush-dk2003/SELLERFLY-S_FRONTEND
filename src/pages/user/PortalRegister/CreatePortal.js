@@ -30,6 +30,7 @@ const CreatePortal = () => {
       startDate: "",
       endDate: "",
       portalHealth: "",
+      registeredBy: "US", // default
     },
   ]);
 
@@ -48,8 +49,10 @@ const CreatePortal = () => {
       return;
     }
     try {
-      // const res = await fetch(`http://localhost:5000/api/clients/search/${query}`);
-      const res = await fetch(`https://sellerfly-backend-production.up.railway.app/api/clients/search/${query}`);
+      const res = await fetch(
+        `http://localhost:5000/api/clients/search/${query}`
+      );
+      // const res = await fetch(`https://sellerfly-backend-production.up.railway.app/api/clients/search/${query}`);
       const data = await res.json();
       if (Array.isArray(data)) {
         setClientSuggestions(data);
@@ -89,6 +92,7 @@ const CreatePortal = () => {
         startDate: "",
         endDate: "",
         portalHealth: "",
+        registeredBy: "US",
       },
     ]);
 
@@ -115,14 +119,15 @@ const CreatePortal = () => {
         status: PORTAL_ENUM_STATUSES.includes(p.status) ? p.status : "TODO",
         remarks: p.remarks || null,
         startDate: p.startDate || null,
-  endDate: p.endDate || null,
-  portalHealth: p.portalHealth || null,
+        endDate: p.endDate || null,
+        portalHealth: p.portalHealth || null,
+        registeredBy: p.registeredBy || "US",
       })),
     };
 
     try {
-      // const res = await fetch("http://localhost:5000/api/portals", {
-      const res = await fetch("https://sellerfly-backend-production.up.railway.app/api/portals", {
+      const res = await fetch("http://localhost:5000/api/portals", {
+        // const res = await fetch("https://sellerfly-backend-production.up.railway.app/api/portals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -226,18 +231,17 @@ const CreatePortal = () => {
                     />
                   </div>
                 )}
-                <div className="col-md-4 mb-3">
-                  <label>Portal Health</label>
+                <div className="col-md-6 mb-3">
+                  <label>Portal Registration</label>
                   <select
-                    name="portalHealth"
-                    value={portal.portalHealth}
+                    name="registeredBy"
+                    value={portal.registeredBy}
                     onChange={(e) => handlePortalChange(index, e)}
                     className="form-control"
+                    required
                   >
-                    <option value="">Select</option>
-                    <option value="GOOD">Good</option>
-                    <option value="BAD">Bad</option>
-                    <option value="NEEDS_IMPROVEMENT">Needs Improvement</option>
+                    <option value="US">Registered by Us</option>
+                    <option value="CLIENT">Registered by Client</option>
                   </select>
                 </div>
 
@@ -264,7 +268,7 @@ const CreatePortal = () => {
                     required
                   />
                 </div>
-                <div className="col-md-4 mb-3">
+                <div className="col-md-6 mb-3">
                   <label>Start Date</label>
                   <input
                     type="date"
@@ -275,7 +279,7 @@ const CreatePortal = () => {
                   />
                 </div>
 
-                <div className="col-md-4 mb-3">
+                <div className="col-md-6 mb-3">
                   <label>End Date</label>
                   <input
                     type="date"
@@ -284,6 +288,20 @@ const CreatePortal = () => {
                     onChange={(e) => handlePortalChange(index, e)}
                     className="form-control"
                   />
+                </div>
+                <div className="col-md-6 mb-3">
+                  <label>Portal Health</label>
+                  <select
+                    name="portalHealth"
+                    value={portal.portalHealth}
+                    onChange={(e) => handlePortalChange(index, e)}
+                    className="form-control"
+                  >
+                    <option value="">Select</option>
+                    <option value="GOOD">Good</option>
+                    <option value="BAD">Bad</option>
+                    <option value="NEEDS_IMPROVEMENT">Needs Improvement</option>
+                  </select>
                 </div>
 
                 <div className="col-md-6 mb-3">
