@@ -3,7 +3,6 @@ import Login from "./pages/commonpages/Login";
 import Register from "./pages/commonpages/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import ManagerDashboard from "./pages/manager/ManagerDashboard";
 import UserDashboard from "./pages/user/UserDashboard";
 import ManagerStatus from "./pages/manager/ManagerStatus";
 import ManagerDailyStatus from "./pages/manager/ManagerDailyStatus";
@@ -41,21 +40,14 @@ function App() {
         <Route path="/register" element={<Register />} />
 
         <Route
-          path="/admindashboard"
+          path="/projects"
           element={
-            <ProtectedRoute allowedRoles={["ADMIN"]}>
+            <ProtectedRoute allowedRoles={["ADMIN","MANAGER"]}>
               <AdminDashboard />
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/managerdashboard"
-          element={
-            <ProtectedRoute allowedRoles={["MANAGER"]}>
-              <ManagerDashboard />
-            </ProtectedRoute>
-          }
-        />
+        
         <Route
           path="/managerstatus"
           element={
@@ -81,9 +73,9 @@ function App() {
           }
         />
         <Route
-          path="/userdashboard"
+          path="/tasks"
           element={
-            <ProtectedRoute allowedRoles={["USER"]}>
+            <ProtectedRoute allowedRoles={["USER", "ADMIN", "MANAGER"]}>
               <UserDashboard />
             </ProtectedRoute>
           }
@@ -91,7 +83,7 @@ function App() {
         <Route
           path="/invoice"
           element={
-            <ProtectedRoute allowedRoles={["ADMIN", "MANAGER"]}>
+            <ProtectedRoute allowedRoles={["MANAGER"]}>
               <InvoiceGenerator />
             </ProtectedRoute>
           }
@@ -107,7 +99,7 @@ function App() {
         <Route
           path="/client-registration"
           element={
-            <ProtectedRoute allowedRoles={["USER"]} allowedDepartments={["REGISTRATION TEAM"]}>
+            <ProtectedRoute allowedRoles={["USER","ADMIN","MANAGER"]} allowedDepartments={["REGISTRATION TEAM","MANAGEMENT"]}>
               <Clientregistration />
             </ProtectedRoute>
           }
@@ -115,7 +107,7 @@ function App() {
         <Route
           path="/portal-registration"
           element={
-            <ProtectedRoute allowedRoles={["USER"]} allowedDepartments={["REGISTRATION TEAM"]}>
+            <ProtectedRoute allowedRoles={["USER","ADMIN","MANAGER"]} allowedDepartments={["REGISTRATION TEAM","MANAGEMENT"]}>
               <Portalregistration />
             </ProtectedRoute>
           }
@@ -123,7 +115,7 @@ function App() {
         <Route
           path="/catalog-registration"
           element={
-            <ProtectedRoute allowedRoles={["USER"]} allowedDepartments={["KEY ACC MANAGEMENT"]}>
+            <ProtectedRoute allowedRoles={["USER","ADMIN","MANAGER"]} allowedDepartments={["KEY ACC MANAGEMENT","MANAGEMENT"]}>
               <CatalogRegistration />
             </ProtectedRoute>
           }
@@ -131,7 +123,7 @@ function App() {
         <Route
           path="/growth-management"
           element={
-            <ProtectedRoute allowedRoles={["USER"]} allowedDepartments={["GROWTH MANAGEMENT"]}>
+            <ProtectedRoute allowedRoles={["USER","ADMIN","MANAGER"]} allowedDepartments={["GROWTH MANAGEMENT","MANAGEMENT"]}>
               <GrowthManagement />
             </ProtectedRoute>
           }

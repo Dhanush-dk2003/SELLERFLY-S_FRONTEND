@@ -39,9 +39,9 @@ const Login = () => {
 
     const loggedInUser = await login(emailOrId, password);
     if (loggedInUser) {
-      if (loggedInUser.role === "ADMIN") navigate("/admindashboard");
-      else if (loggedInUser.role === "MANAGER") navigate("/managerdashboard");
-      else navigate("/userdashboard");
+      if (loggedInUser.role === "ADMIN") navigate("/projects");
+      else if (loggedInUser.role === "MANAGER") navigate("/projects");
+      else navigate("/tasks");
     } else {
       setError("Invalid login credentials");
     }

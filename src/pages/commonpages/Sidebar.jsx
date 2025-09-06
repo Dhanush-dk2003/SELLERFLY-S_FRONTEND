@@ -16,9 +16,7 @@ const Sidebar = () => {
   const { hasPendingMessageDot } = useContext(MessageStatusContext);
 
   useEffect(() => {
-    if (location.pathname.includes("managerdashboard")) {
-      setActiveItem("projects");
-    } else if (location.pathname.includes("admindashboard")) {
+    if (location.pathname.includes("projects")) {
       setActiveItem("projects");
     } else if (location.pathname.includes("managerstatus")) {
       setActiveItem("status");
@@ -26,7 +24,7 @@ const Sidebar = () => {
       setActiveItem("invoice");
     } else if (location.pathname.includes("profile")) {
       setActiveItem("profile");
-    } else if (location.pathname.includes("userdashboard")) {
+    } else if (location.pathname.includes("tasks")) {
       setActiveItem("tasks");
     } else if (location.pathname.includes("message")) {
       setActiveItem("message");
@@ -36,8 +34,7 @@ const Sidebar = () => {
       setActiveItem("portal-registration");
     } else if (location.pathname.includes("catalog-registration")) {
       setActiveItem("catalog-registration");
-    }
-    else if (location.pathname.includes("growth-management")) {
+    } else if (location.pathname.includes("growth-management")) {
       setActiveItem("growth-management");
     }
   }, [location.pathname]);
@@ -145,8 +142,8 @@ const SidebarContent = ({
       </div>
 
       {/* Menu Items */}
-      <div className="flex-grow-1 text-center mt-5">
-        <ul className="nav flex-column w-100 mt-5">
+      <div className="flex-grow-1 text-center mt-1">
+        <ul className="nav flex-column w-100 mt-2">
           {/* ADMIN & MANAGER */}
           {(user?.role === "ADMIN" || user?.role === "MANAGER") && (
             <>
@@ -157,16 +154,21 @@ const SidebarContent = ({
                       ? "bg-dark text-white fw-bold"
                       : "bg-light text-dark"
                   }`}
-                  onClick={() =>
-                    handleItemClick(
-                      "projects",
-                      user?.role === "ADMIN"
-                        ? "/admindashboard"
-                        : "/managerdashboard"
-                    )
-                  }
+                  onClick={() => handleItemClick("projects", "/projects")}
                 >
                   Projects
+                </button>
+              </li>
+              <li className="nav-item mb-3">
+                <button
+                  className={`nav-link w-100 rounded ${
+                    activeItem === "tasks"
+                      ? "bg-dark text-white fw-bold"
+                      : "bg-light text-dark"
+                  }`}
+                  onClick={() => handleItemClick("tasks", "/tasks")}
+                >
+                  Tasks
                 </button>
               </li>
 
@@ -185,7 +187,7 @@ const SidebarContent = ({
                 </li>
               )}
 
-              {user?.role === "ADMIN" && (
+              {(user?.role === "MANAGER") && (
                 <>
                   <li className="nav-item mb-3">
                     <button
@@ -216,24 +218,8 @@ const SidebarContent = ({
             </>
           )}
 
-          {/* USER */}
-          {user?.role === "USER" && (
-            <li className="nav-item mb-3">
-              <button
-                className={`nav-link w-100 rounded ${
-                  activeItem === "tasks"
-                    ? "bg-dark text-white fw-bold"
-                    : "bg-light text-dark"
-                }`}
-                onClick={() => handleItemClick("tasks", "/userdashboard")}
-              >
-                Tasks
-              </button>
-            </li>
-          )}
-
           {/* REGISTRATION TEAM */}
-          {user?.department === "REGISTRATION TEAM" && (
+          {(user?.department === "REGISTRATION TEAM" || user?.department === "MANAGEMENT") && (
             <>
               <li className="nav-item mb-3">
                 <button
@@ -243,7 +229,10 @@ const SidebarContent = ({
                       : "bg-light text-dark"
                   }`}
                   onClick={() =>
-                    handleItemClick("client-registration", "/client-registration")
+                    handleItemClick(
+                      "client-registration",
+                      "/client-registration"
+                    )
                   }
                 >
                   Client Registration
@@ -257,7 +246,10 @@ const SidebarContent = ({
                       : "bg-light text-dark"
                   }`}
                   onClick={() =>
-                    handleItemClick("portal-registration", "/portal-registration")
+                    handleItemClick(
+                      "portal-registration",
+                      "/portal-registration"
+                    )
                   }
                 >
                   Portal Registration
@@ -267,40 +259,42 @@ const SidebarContent = ({
           )}
 
           {/* KEY ACCOUNT MANAGEMENT */}
-{user?.department === "KEY ACC MANAGEMENT" && (
-  <li className="nav-item mb-3">
-    <button
-      className={`nav-link w-100 rounded ${
-        activeItem === "catalog-registration"
-          ? "bg-dark text-white fw-bold"
-          : "bg-light text-dark"
-      }`}
-      onClick={() =>
-        handleItemClick("catalog-registration", "/catalog-registration")
-      }
-    >
-      Catalog
-    </button>
-  </li>
-)}
- {/* KEY ACCOUNT MANAGEMENT */}
-{user?.department === "GROWTH MANAGEMENT" && (
-  <li className="nav-item mb-3">
-    <button
-      className={`nav-link w-100 rounded ${
-        activeItem === "growth-management"
-          ? "bg-dark text-white fw-bold"
-          : "bg-light text-dark"
-      }`}
-      onClick={() =>
-        handleItemClick("growth-management", "/growth-management")
-      }
-    >
-      Growth Manage
-    </button>
-  </li>
-)}
-
+          {(user?.department === "KEY ACC MANAGEMENT" || user?.department === "MANAGEMENT") && (
+            <li className="nav-item mb-3">
+              <button
+                className={`nav-link w-100 rounded ${
+                  activeItem === "catalog-registration"
+                    ? "bg-dark text-white fw-bold"
+                    : "bg-light text-dark"
+                }`}
+                onClick={() =>
+                  handleItemClick(
+                    "catalog-registration",
+                    "/catalog-registration"
+                  )
+                }
+              >
+                Catalog
+              </button>
+            </li>
+          )}
+          {/* KEY ACCOUNT MANAGEMENT */}
+          {(user?.department === "GROWTH MANAGEMENT" || user?.department === "MANAGEMENT") && (
+            <li className="nav-item mb-3">
+              <button
+                className={`nav-link w-100 rounded ${
+                  activeItem === "growth-management"
+                    ? "bg-dark text-white fw-bold"
+                    : "bg-light text-dark"
+                }`}
+                onClick={() =>
+                  handleItemClick("growth-management", "/growth-management")
+                }
+              >
+                Growth Manage
+              </button>
+            </li>
+          )}
 
           {/* MESSAGE */}
           <li className="nav-item mb-3 position-relative">
